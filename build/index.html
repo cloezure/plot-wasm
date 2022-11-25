@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>WasmTest</title>
+  </head>
+  <body>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    <script type='text/javascript'>
+
+      let SSE = new EventSource('http://' + '10.16.0.156' + ':' + 3030 + '/get-all-spectrums');
+
+      SSE.onmessage = msg => console.log(msg); 
+      
+      var Module = {
+          canvas: (function() {
+              return document.getElementById('canvas');
+          })()
+      };
+      
+      // draw_spec = Module.cwrap('draw_spec', ['Float32Array', 'number', 'number', 'number'], [null, 0, 0, 0]);
+      
+    </script>
+
+    <script src="plot.js"></script>
+  </body>
+</html>
