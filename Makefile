@@ -28,5 +28,5 @@ all:
 clean:
 	rm -rf $(DBUILD)/$(TARGET).{js,wasm}
 
-run:
+run: all
 	emrun $(DBUILD)/index.html

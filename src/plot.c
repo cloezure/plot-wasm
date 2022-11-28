@@ -1,6 +1,7 @@
 #include <SDL2/SDL_render.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "coordsinfo.h"
 #include "plot.h"
@@ -19,20 +20,42 @@ static inline void unload_coords_info(void) {
     CoordsInfo_free(g_coords_info);
 }
 
-static void math_coords_to_screen(double x, double y, double scale, int cx, int cy, int*sx, int*sy) {
-    assert(sx != NULL);
-    assert(sy != NULL);
+static uint32_t get_uint32(char const* data, size_t offset) {
+    uint32_t res = 0;
+    memcpy(&res, data + offset, sizeof(res));
+    return res;
+}
 
-    *sx = cx + x * scale;
-    *sy = cy - y * scale;
+static float get_float(char const* data, size_t offset) {
+    float res = 0.0f;
+    memcpy(&res, data + offset, sizeof(res));
+    return res;
+}
+
+static char* slice(char const* str, char * res, size_t start, size_t end) {
+    return strncpy(res, str + start, end - start);
 }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_spec(float* specs, int32_t spec_count, int32_t reports_count, size_t spec_config_size) {
-
+void push_spec(trace_t *trace) {
+    for(size_t i = 0; i < )
 }
+/* void push_spec(char const* view) { */
+/*     uint32_t const spectrums_count = get_uint32(view, 0); */
+/*     uint32_t const reports_count = get_uint32(view, 4); */
+
+/*     /\* {x0, dx, spectrum} *\/ */
+/*     size_t const spectrum_config_size = 4 + 4 + (4 * reports_count); */
+
+/*     for(size_t spec_idx = 0; spec_idx < spectrums_count; ++spec_idx) { */
+/*         size_t const offset = 8 + (spec_idx * spectrum_config_size); */
+/*         char buffer[100] = {0}; */
+/*         spec_t * spec = Spectrum_init(strlen(slice(view, buffer, offset + 8, offset + spectrum_config_size))); */
+
+/*     } */
+/* } */
 
 static inline void draw_background(void) {
     SDL_SetRenderDrawColor(g_ren, 0x20, 0x20, 0x20, 0xFF);
@@ -145,8 +168,8 @@ void handle_events(void) {
             break;
         }
         case SDL_MOUSEMOTION: {
-            mouse_pos.x = event.motion.x;
-            mouse_pos.y = event.motion.y;
+            mouse_pos.x = event.motion.x - WIN_MID_WIDTH;
+            mouse_pos.y = event.motion.y - WIN_MID_HEIGHT;
             break;
         }
     }
