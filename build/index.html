@@ -8,15 +8,44 @@
   <body>
     <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     <script type='text/javascript'>
-
-      let SSE = new EventSource('http://' + '10.16.0.156' + ':' + 3030 + '/get-all-spectrums');
-
-      SSE.onmessage = msg => console.log(msg); 
       
       var Module = {
           canvas: (function() {
               return document.getElementById('canvas');
           })()
+
+      let SSE = new EventSource('http://' + '10.16.0.156' + ':' + 3030 + '/get-all-spectrums');
+
+      function base64ToArrayBuffer(base64) {
+          let bs = window.atob(base64)
+          let len = bs.length
+          let bytes = new Uint8Array(len)
+          for(let i = 0; i < len; i++) {
+              bytes[i] = bs.charCodeAt(i);
+          }
+          return bytes.buffer;
+      }
+
+      const api = {
+          trace_init: Module.cwrap("Trace_init", "", ["number"]),
+          draw_trace: Module.cwrap("draw_trace", "", ["number"]),
+          trace_free: Module.cwrap("Trace_free", "", ["number"]),
+      };
+
+      SSE.onmessage = msg => {
+          let buffer = base64ToArrayBuffer(msg.data)
+          let view = new DataView(buffer)
+          
+          let sp = view.getUint32(0, true)
+          let rc = view.getUint32(4, true)
+          let scs = 8 + 4 * rc
+
+          for (let sidx = 0; sidx < scs; sidx++) {
+              let trace = api.Trace_init(rc)
+              api.draw_trace(trace)
+              api.Trace_free(trace)
+          }
+      }
       };
       
       // draw_spec = Module.cwrap('draw_spec', ['Float32Array', 'number', 'number', 'number'], [null, 0, 0, 0]);

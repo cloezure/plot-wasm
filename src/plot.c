@@ -39,8 +39,15 @@ static char* slice(char const* str, char * res, size_t start, size_t end) {
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_spec(trace_t *trace) {
-    for(size_t i = 0; i < )
+void draw_trace(trace_t *trace) {
+    assert(trace != NULL);
+    size_t report_idx = 0;
+    for(size_t i = trace->x0; i < trace->fft_reports_size - 1; i += trace->dx) {
+        SDL_RenderDrawLineF(g_ren,
+                            i,
+                            trace->fft_reports[report_idx],
+                            i + trace->dx, trace->fft_reports[report_idx + 1]);
+    }
 }
 /* void push_spec(char const* view) { */
 /*     uint32_t const spectrums_count = get_uint32(view, 0); */

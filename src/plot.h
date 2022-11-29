@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "spectrum.h"
+#include "trace.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -12,7 +12,7 @@
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_spec(float x0, float dx, float* reports);
+void draw_trace(trace_t *trace);
 
 void init_sdl_environment(void);
 void clear_sdl_environment(void);
