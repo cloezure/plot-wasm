@@ -13,15 +13,8 @@ typedef struct Trace {
     size_t fft_reports_size;
 } trace_t;
 
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-trace_t* Trace_init(size_t fft_reports_size);
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-void Trace_free(trace_t * spec);
+void Trace_init(float x0, float dx, float *fft_reports, size_t fft_reports_size);
+void Trace_free(trace_t * trace);
 
 /* #ifdef __EMSCRIPTEN__ */
 /* EMSCRIPTEN_BINDINGS(my_value) { */

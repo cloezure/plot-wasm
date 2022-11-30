@@ -8,7 +8,13 @@ BUILD_IN :=js
 CC :=emcc
 
 # project flags
-override CFLAGS += -std=c11 -O2 -sUSE_SDL_TTF=2 -sUSE_SDL=2 -sWASM=1 --preload-file ./res
+override CFLAGS += -std=c11\
+					-O2\
+					-sUSE_SDL_TTF=2\
+					-sEXPORTED_RUNTIME_METHODS=["cwrap","ccall"]\
+					-sUSE_SDL=2\
+					-sWASM=1\
+					--preload-file ./res
 
 # source code dir
 DSRC :=./src

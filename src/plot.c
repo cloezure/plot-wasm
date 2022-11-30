@@ -39,15 +39,15 @@ static char* slice(char const* str, char * res, size_t start, size_t end) {
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void draw_trace(trace_t *trace) {
-    assert(trace != NULL);
-    size_t report_idx = 0;
-    for(size_t i = trace->x0; i < trace->fft_reports_size - 1; i += trace->dx) {
-        SDL_RenderDrawLineF(g_ren,
-                            i,
-                            trace->fft_reports[report_idx],
-                            i + trace->dx, trace->fft_reports[report_idx + 1]);
+void draw_trace(float x0, float dx, float *fft_reports, int fft_reports_size) {
+    if(!g_draw_plot) {
+       g_draw_plot = true;
+       Trace_init(x0, dx, fft_reports, fft_reports_size);
     }
+    else {
+        g_draw_plot = false;
+    }
+    /* SDL_RenderDrawPoint(g_ren, x0 + WIN_MID_WIDTH, 100); */
 }
 /* void push_spec(char const* view) { */
 /*     uint32_t const spectrums_count = get_uint32(view, 0); */
@@ -84,10 +84,28 @@ static inline void draw_coords_info(void) {
     SDL_RenderCopy(g_ren, g_coords_info->texture, NULL, &g_coords_info->position);
 }
 
+static inline void draw_plot() {
+    assert(g_trace != NULL);
+    size_t report_idx = 0;
+    SDL_SetRenderDrawColor(g_ren, 0x00, 0xFF, 0x00, 0xFF);
+    for(float i = g_trace->x0; i < g_trace->fft_reports_size - 1; i += g_trace->dx) {
+        SDL_RenderDrawLineF(g_ren,
+                            i - 100,
+                            g_trace->fft_reports[report_idx],
+                            i + g_trace->dx,
+                            g_trace->fft_reports[report_idx + 1]);
+    }
+}
+
+
 static inline void draw(void) {
     draw_background();
     draw_coords_lines();
     draw_coords_info();
+
+    if(g_draw_plot) {
+        draw_plot();
+    }
 
     SDL_RenderPresent(g_ren);
 }
