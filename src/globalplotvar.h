@@ -10,8 +10,8 @@
 #include "coordsinfo.h"
 #include "trace.h"
 
-#define WIN_WIDTH 400
-#define WIN_HEIGHT 400
+#define WIN_WIDTH 400*2
+#define WIN_HEIGHT 400*2
 #define WIN_MID_WIDTH WIN_WIDTH/2
 #define WIN_MID_HEIGHT WIN_HEIGHT/2
 

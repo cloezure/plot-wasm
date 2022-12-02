@@ -7,7 +7,40 @@
   </head>
   <body>
     <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-    <input type="button" value="Draw" onclick="callAdd()" />
+    <input type="button" name="draw" value="Draw" onclick="Draw()" />
+    <input type="button" name="undraw" value="UnDraw" onclick="Undraw()" />
+
+    <script type="text/javascript" src="parse.js"></script>
+
+    <script>
+      var TOTAL_MEMORY = 16777216;
+      var WASM_PAGE_SIZE = 65536;
+      var wasmMemory = new WebAssembly.Memory({ 'initial': TOTAL_MEMORY / WASM_PAGE_SIZE,
+                                                'maximum': TOTAL_MEMORY / WASM_PAGE_SIZE});
+      var buffer = wasmMemory.buffer;
+
+      function wasmInstantiator(wasmBinary) {
+          return (info, receiveInstance) => {
+              var importObject = Object.assign({}, info);
+              importObject['env']['memory'] = wasmMemory;
+              WebAssembly.instantiateStreaming(fetch(wasmBinary, {credentials: 'same-origin'}), importObject)
+                  .then((output) => { receiveInstance(output['instance']); },
+                        (err) => { console.error('wasm streaming compile failed: ' + err);});
+              return {};
+          };
+      };
+      
+    </script>
+
+    <script>
+      var wasmModules = {
+          init_new_data_str: FILL_ARRAY_MODULE( {instantiateWasm: wasmInstantiator('parse.wasm'), TOTAL_MEMORY, buffer} )
+      };
+
+      
+    </script>
+
+      
     <script type='text/javascript'>
 
       let SSE = new EventSource('http://' + '10.16.0.156' + ':' + 3030 + '/get-all-spectrums');
@@ -28,29 +61,35 @@
           })(),
       };
 
-      // function callAdd() {
+      function Undraw() {
+          SSE.onmessage = msg => {}
+          console.log("Off")
+      }
+
+      function Draw() {
           SSE.onmessage = msg => {
               
               let buffer = base64ToArrayBuffer(msg.data)
               let view = new DataView(buffer)
               
-              let sp = view.getUint32(0, true)
-              let rc = view.getUint32(4, true)
-              let scs = 8 + 4 * rc
+              let spectrum_count = view.getUint32(0, true)
+              let reports_count = view.getUint32(4, true)
+              let spectrum_config_size = 4 + 4 + (4 * reports_count)
 
-              for (let sidx = 0; sidx < scs; sidx++) {
-                  let offset = 8 + sidx * scs;
+              for (let sidx = 0; sidx < spectrum_config_size; sidx++) {
+                  let offset = 8 + (sidx * spectrum_config_size);
+                  let datas = new Float32Array(buffer.slice(offset + 8, offset + spectrum_config_size))
                   Module.ccall('draw_trace',
                                null,
                                ['number', 'number', 'number', 'number'],
                                [view.getFloat32(offset, true),
                                 view.getFloat32(offset + 4, true),
-                                new Float32Array(buffer.slice(offset + 8, offset + scs)),
-                                rc]);
+                                datas,
+                                reports_count]);
               }
-              console.log("ON")
+              console.log(`${msg}`)
           }
-      // }
+      }
       // const test = Module.cwrap("test", "number", ["number", "number"]);
 
       // console.log(test(10, 10));

@@ -88,12 +88,12 @@ static inline void draw_plot() {
     assert(g_trace != NULL);
     size_t report_idx = 0;
     SDL_SetRenderDrawColor(g_ren, 0x00, 0xFF, 0x00, 0xFF);
-    for(float i = g_trace->x0; i < g_trace->fft_reports_size - 1; i += g_trace->dx) {
+    for(float i = g_trace->x0; i < g_trace->fft_reports_size; i += g_trace->dx) {
         SDL_RenderDrawLineF(g_ren,
-                            i - 100,
-                            g_trace->fft_reports[report_idx],
+                            i,
+                            g_trace->fft_reports[report_idx] + 100,
                             i + g_trace->dx,
-                            g_trace->fft_reports[report_idx + 1]);
+                            g_trace->fft_reports[report_idx] + 100);
     }
 }
 
