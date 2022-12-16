@@ -5,16 +5,23 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
+#include <stdlib.h>
 
 #include "globalplotvar.h"
 #include "plot.h"
 
 int32_t main(void) {
-    init_sdl_environment();
+    if(!Plot_init()) {
+       return EXIT_FAILURE;
+    }
+
+    if(!Plot_load()) {
+        return EXIT_FAILURE;
+    }
+
 #ifdef __EMSCRIPTEN__
     const int32_t simulate_infinite_loop = 1;
     const int32_t fps = -1;
-
     /* emscripten_set_some_callback("canvas0", NULL, EM_FALSE, NULL); */
     emscripten_set_main_loop(handle_events, fps, simulate_infinite_loop);
 #else
@@ -22,5 +29,5 @@ int32_t main(void) {
         handle_events();
     }
 #endif
-    clear_sdl_environment();
+    Plot_quit();
 }

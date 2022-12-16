@@ -2,22 +2,72 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "coordsinfo.h"
 #include "plot.h"
 #include "globalplotvar.h"
 
 SDL_Point mouse_pos = {.x = 0, .y = 0};
-uint32_t ticks_for_next_down = 0;
 
-static inline void load_coords_info(void) {
-    SDL_Color color = {0xFF, 0xFF, 0xFF, 255};
-    SDL_Rect position = {.x = WIN_WIDTH - 100, .y = 20, .w = 50, .h = 20};
-    g_coords_info = CoordsInfo_init("res/LiberationSerif-Regular.ttf", 20, color, position);
+bool Plot_init(void) {
+    // Video Engine
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        DISPLAY_ERROR_SDL("SDL could not init!");
+        return false;
+    }
+
+    SDL_CreateWindowAndRenderer(WIN_WIDTH,
+                                WIN_HEIGHT,
+                                0,
+                                &g_win,
+                                &g_ren);
+
+    if (g_win == NULL) {
+        DISPLAY_ERROR_SDL("Window could not be created!");
+        SDL_Quit();
+        return false;
+    }
+
+    if (g_ren == NULL) {
+        DISPLAY_ERROR_SDL("Renderer could not be created!");
+        return false;
+    }
+
+    if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
+        printf("%s\n",
+               "Warning: Linear texture filtering not enabled!");
+    }
+
+    if(TTF_Init() == -1) {
+        printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+    }
+
+    SDL_SetRenderDrawColor(g_ren, 0xFF, 0xFF, 0xFF, 0xFF);
+
+    return true;
 }
 
-static inline void unload_coords_info(void) {
+bool Plot_load(void) {
+    /* load coords info */
+    SDL_Color color = {0xFF, 0xFF, 0xFF, 255};
+    SDL_Rect position = {.x = WIN_WIDTH - 100, .y = 20, .w = 50, .h = 20};
+    g_coords_info = CoordsInfo_init("res/Gilroy-Regular.ttf", 20, color, position);
+
+    return true;
+}
+
+void Plot_quit(void) {
+    SDL_DestroyRenderer(g_ren);
+    g_ren = NULL;
+    SDL_DestroyWindow(g_win);
+    g_win = NULL;
+
     CoordsInfo_free(g_coords_info);
+    g_coords_info = NULL;
+
+    TTF_Quit();
+    SDL_Quit();
 }
 
 static uint32_t get_uint32(char const* data, size_t offset) {
@@ -39,16 +89,18 @@ static char* slice(char const* str, char * res, size_t start, size_t end) {
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void draw_trace(float x0, float dx, float *fft_reports, int fft_reports_size) {
-    if(!g_draw_plot) {
-       g_draw_plot = true;
-       Trace_init(x0, dx, fft_reports, fft_reports_size);
-    }
-    else {
-        g_draw_plot = false;
-    }
-    /* SDL_RenderDrawPoint(g_ren, x0 + WIN_MID_WIDTH, 100); */
+void set_fps(int32_t fps) {
+    FPS_PLOT = fps;
 }
+
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+void push_data(char *data) {
+    // parse base64
+    // for on string to push in traces
+}
+
 /* void push_spec(char const* view) { */
 /*     uint32_t const spectrums_count = get_uint32(view, 0); */
 /*     uint32_t const reports_count = get_uint32(view, 4); */
@@ -84,18 +136,18 @@ static inline void draw_coords_info(void) {
     SDL_RenderCopy(g_ren, g_coords_info->texture, NULL, &g_coords_info->position);
 }
 
-static inline void draw_plot() {
-    assert(g_trace != NULL);
-    size_t report_idx = 0;
-    SDL_SetRenderDrawColor(g_ren, 0x00, 0xFF, 0x00, 0xFF);
-    for(float i = g_trace->x0; i < g_trace->fft_reports_size; i += g_trace->dx) {
-        SDL_RenderDrawLineF(g_ren,
-                            i,
-                            g_trace->fft_reports[report_idx] + 100,
-                            i + g_trace->dx,
-                            g_trace->fft_reports[report_idx] + 100);
-    }
-}
+/* static inline void draw_plot() { */
+/*     assert(g_trace != NULL); */
+/*     size_t report_idx = 0; */
+/*     SDL_SetRenderDrawColor(g_ren, 0x00, 0x00, 0xFF, 0xFF); */
+/*     for(float i = g_trace->x0; i < g_trace->fft_reports_size; i += g_trace->dx) { */
+/*         SDL_RenderDrawLineF(g_ren, */
+/*                             i, */
+/*                             g_trace->fft_reports[report_idx] + 100, */
+/*                             i + g_trace->dx, */
+/*                             g_trace->fft_reports[report_idx] + 100); */
+/*     } */
+/* } */
 
 
 static inline void draw(void) {
@@ -103,83 +155,11 @@ static inline void draw(void) {
     draw_coords_lines();
     draw_coords_info();
 
-    if(g_draw_plot) {
-        draw_plot();
-    }
+    /* if(g_draw_plot) { */
+    /*     draw_plot(); */
+    /* } */
 
     SDL_RenderPresent(g_ren);
-}
-
-
-void init_sdl_environment(void) {
-
-    // Video Engine
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        DISPLAY_ERROR_SDL("SDL could not init!");
-        exit(EXIT_FAILURE);
-    }
-
-
-#define REN_AND_WIN 1
-
-#if REN_AND_WIN
-    SDL_CreateWindowAndRenderer(WIN_WIDTH,
-                                WIN_HEIGHT,
-                                0,
-                                &g_win,
-                                &g_ren);
-#else
-    // Window
-    g_win = SDL_CreateWindow("Plot",
-                           SDL_WINDOWPOS_UNDEFINED,
-                           SDL_WINDOWPOS_UNDEFINED,
-                           WIN_WIDTH,
-                           WIN_HEIGHT,
-                           SDL_WINDOW_SHOWN);
-#endif
-
-    if (g_win == NULL) {
-        DISPLAY_ERROR_SDL("Window could not be created!");
-        SDL_Quit();
-        exit(EXIT_FAILURE);
-    }
-
-#if !REN_AND_WIN
-
-    // Graphics Renderer
-    g_ren = SDL_CreateRenderer(g_win,
-                             -1,
-                             SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-#endif
-
-    if (g_ren == NULL) {
-        DISPLAY_ERROR_SDL("Renderer could not be created!");
-        exit(EXIT_FAILURE);
-    }
-
-    if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
-        printf("%s\n",
-               "Warning: Linear texture filtering not enabled!");
-    }
-
-    if(TTF_Init() == -1) {
-        printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
-    }
-
-    load_coords_info();
-    SDL_SetRenderDrawColor(g_ren, 0xFF, 0xFF, 0xFF, 0xFF);
-}
-
-void clear_sdl_environment(void) {
-
-    SDL_DestroyRenderer(g_ren);
-    SDL_DestroyWindow(g_win);
-    unload_coords_info();
-    g_win = NULL;
-    g_ren = NULL;
-
-    TTF_Quit();
-    SDL_Quit();
 }
 
 void handle_events(void) {
@@ -188,9 +168,7 @@ void handle_events(void) {
 
     switch(event.type) {
         case SDL_QUIT: {
-            clear_sdl_environment();
-            exit(EXIT_SUCCESS);
-            break;
+            return;
         }
         case SDL_MOUSEMOTION: {
             mouse_pos.x = event.motion.x - WIN_MID_WIDTH;

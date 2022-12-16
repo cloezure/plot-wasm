@@ -10,8 +10,14 @@
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void draw_trace(float x0, float dx, float* fft_reports, int fft_reports_size);
+void set_fps(int32_t fps);
 
-void init_sdl_environment(void);
-void clear_sdl_environment(void);
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+void push_data(char *data);
+
+bool Plot_init(void);
+bool Plot_load(void);
+void Plot_quit(void);
 void handle_events(void);
