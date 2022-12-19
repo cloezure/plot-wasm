@@ -8,7 +8,7 @@
   <body>
     <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     <script type='text/javascript'>
-      let SSE = new EventSource('http://' + '10.16.0.156' + ':' + 3030 + '/get-all-spectrums');
+     // let SSE = new EventSource('http://' + '10.16.0.156' + ':' + 3030 + '/get-all-spectrums');
 
       var Module = {
           canvas: (function() {
@@ -16,11 +16,11 @@
           })(),
       };
 
-      SSE.onmessage = msg => {
-          Module.ccall('set_fps', null, ['number'], [60]);
-          Module.ccall('push_data', null, ['number'], [msg]);
-          console.log(`${msg}`);
-      }
+     // SSE.onmessage = msg => {
+     //     Module.ccall('set_fps', null, ['number'], [60]);
+     //     Module.ccall('push_data', null, ['number'], [msg]);
+     //     console.log(`${msg}`);
+     // }
     </script>
     <script async type="text/javascript" src="plot.js"></script>
   </body>
