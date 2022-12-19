@@ -18,9 +18,9 @@ ifeq ($(PROJECT_TYPE), "WEB")
 
 # project flags
 override CFLAGS += -std=c11\
-					-O2\
+					-O0\
 					-sUSE_SDL_TTF=2\
-					-sEXPORTED_RUNTIME_METHODS=["cwrap","ccall"]\
+					-sEXPORTED_RUNTIME_METHODS=cwrap,ccall\
 					-sUSE_SDL=2\
 					-sWASM=1\
 					--preload-file ./res

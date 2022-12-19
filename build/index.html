@@ -8,19 +8,31 @@
   <body>
     <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     <script type='text/javascript'>
-     // let SSE = new EventSource('http://' + '10.16.0.156' + ':' + 3030 + '/get-all-spectrums');
 
-      var Module = {
-          canvas: (function() {
-              return document.getElementById('canvas');
-          })(),
-      };
+     let SSE = new EventSource('http://' + '10.16.0.156' + ':' + 3030 + '/get-all-spectrums');
 
-     // SSE.onmessage = msg => {
-     //     Module.ccall('set_fps', null, ['number'], [60]);
-     //     Module.ccall('push_data', null, ['number'], [msg]);
-     //     console.log(`${msg}`);
-     // }
+     var Module = {
+         canvas: (() => {
+             var canvas = document.getElementById('canvas');
+             canvas.addEventListener('webglcontextlost', e => {
+                 alert('WebGL context lost. You will need to reload the page.');
+                 e.preventDefault();
+             }, false);
+             return canvas;
+         })(),
+         // onRuntimeInitialized: () => {
+         //    Module.ccall('set_fps', null, ['number'], [55]);
+         //    push_data = Module.cwrap('push_data', null, ['string']);
+         // }
+     }
+
+     while(true) {
+         Module.ccall('set_fps', null, ['number'], [55]);
+     }
+
+     SSE.onmessage = msg => {
+         console.log(`${msg}`);
+     }
     </script>
     <script async type="text/javascript" src="plot.js"></script>
   </body>

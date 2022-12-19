@@ -3,9 +3,13 @@
 #include "colorscheme.h"
 #include "common_function.h"
 #include "global.h"
+#include "text.h"
+#include "parse.h"
 
+#include <SDL2/SDL_assert.h>
 #include <SDL2/SDL_hints.h>
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
 
@@ -18,9 +22,25 @@ void set_fps(int32_t fps) { graphics->fps = fps; }
 EMSCRIPTEN_KEEPALIVE
 #endif
 void push_data(char const *data) {
-  // decode base64
+  char *decode = base64_decode(data);
+
+  uint32_t spectrums_count = get_uint32(decode, 0);
+  uint32_t reports_count = get_uint32(decode, 4);
+  int32_t spectrum_config_size = 4 + 4 + (4 * reports_count);
+
+  /* for(ptrdiff_t spec_idx = 0; spec_idx < spectrums_count; ++spec_idx) { */
+  /*   int32_t offset = 8 + (spec_idx * spectrum_config_size); */
+  /*   int32_t dx = get_float(decode, offset); */
+  /*   int32_t x0 = get_float(decode, offset + 4); */
+  /*   size_t fft_reports_count =  */
+  /*   float* fft_reports = malloc(sizeof(*fft_reports)); */
+
+  /* } */
+
   // for in dots
   // draw plot
+  printf("%s\n", decode);
+  free(decode);
 }
 
 static inline void draw_background(SDL_Color color) {
@@ -29,17 +49,45 @@ static inline void draw_background(SDL_Color color) {
 }
 
 static inline void draw_channels(void) {
+  SDL_SetRenderDrawColor(renderer, 0x2C, 0x2C, 0x2C, 0xFF);
+  SDL_RenderFillRect(renderer, &graphics->channel->head_background);
+  SDL_RenderCopy(renderer, graphics->channel->head_text->texture, NULL,
+                 &graphics->channel->head_text->position);
   SDL_RenderCopy(renderer, graphics->channel->channel_number->texture, NULL,
                  &graphics->channel->channel_number->position);
+  SDL_RenderCopy(renderer, graphics->channel->plot0_name->texture, NULL,
+                 &graphics->channel->plot0_name->position);
+  SDL_RenderCopy(renderer, graphics->channel->plot1_name->texture, NULL,
+                 &graphics->channel->plot1_name->position);
+}
+
+static inline void draw_fps(void) {
+  SDL_Rect pos = {.y = 10};
+  char buff[100];
+  sprintf(buff, "%d", graphics->fps);
+
+  text_t * fps = Text_init(font_type(FONT_B), 60, COLOR_GREEN, pos, buff);
+  fps->position.x = graphics->width - fps->position.w - 10;
+
+  SDL_RenderCopy(renderer, fps->texture, NULL, &fps->position);
+  Text_free(fps);
 }
 
 static inline void draw(void) {
   draw_background(COLOR_BACKGROUND);
   draw_channels();
+  draw_fps();
   SDL_RenderPresent(renderer);
 }
 
 void handle_events(void) {
+
+  const int32_t frame_delay = 1000 / graphics->fps;
+  uint32_t frame_start;
+  int32_t frame_time;
+
+  frame_start = SDL_GetTicks();
+
   SDL_Event event;
   SDL_PollEvent(&event);
 
@@ -50,8 +98,14 @@ void handle_events(void) {
     break;
   }
   }
-
   draw();
+
+  frame_time = SDL_GetTicks() - frame_start;
+
+  if (frame_delay > frame_time) {
+    SDL_Delay(frame_delay - frame_time);
+  }
+
 }
 
 graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
@@ -110,7 +164,8 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
   }
 
   new_graphics->channel =
-      Channel_init((SDL_Rect){.h = 100, .w = 100, .x = 10, .y = 10}, "1",
+    Channel_init( (SDL_Point){.x = 100, .y = 100},
+                  "Service channel", "1",
                    "Serv Tx0", "Serv Tx1");
 
   return new_graphics;

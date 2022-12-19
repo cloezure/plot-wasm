@@ -7,6 +7,15 @@
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
 
+char const *font_type(enum FONT_TYPE type) {
+  switch (type) {
+  case FONT_R:
+    return "res/Gilroy-Regular.ttf";
+  case FONT_B:
+    return "res/Gilroy-Bold.ttf";
+  }
+}
+
 text_t *Text_init(char const *font_path, int32_t font_size, SDL_Color color,
                   SDL_Rect position, char const *text) {
   text_t *new_text = malloc(sizeof(*new_text));
@@ -23,6 +32,8 @@ text_t *Text_init(char const *font_path, int32_t font_size, SDL_Color color,
     display_error_sdl("surface could not be created");
   }
 
+  new_text->position.x = position.x;
+  new_text->position.y = position.y;
   new_text->position.w = sur->w;
   new_text->position.h = sur->h;
 
