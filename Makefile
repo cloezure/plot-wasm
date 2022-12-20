@@ -1,15 +1,17 @@
 # project name
 TARGET := plot
 
+OUT := 0
+WEB := 1
 # project type
-MODE := 1
-ifeq ($(MODE), 1)
+MODE := $(WEB)
+ifeq ($(MODE), $(WEB))
 PROJECT_TYPE := "WEB"
 else
 PROJECT_TYPE := "OUT"
 endif
 
-ifeq ($(PROJECT_TYPE), "WEB")
+ifeq ($(MODE), $(WEB))
 # compiler
 	CC := emcc
 
@@ -17,26 +19,27 @@ ifeq ($(PROJECT_TYPE), "WEB")
 	BUILD_IN := js
 
 # project flags
+# -sMODULARIZE=1
 override CFLAGS += -std=c11\
-					-O0\
-					-sUSE_SDL_TTF=2\
-					-sEXPORTED_RUNTIME_METHODS=cwrap,ccall\
-					-sUSE_SDL=2\
-					-sWASM=1\
-					--preload-file ./res
+				-Os\
+				-sUSE_SDL_TTF=2\
+				-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap']\
+				-sUSE_SDL=2\
+				-sWASM=1\
+				--preload-file ./res
 
 else
 # compiler
-	CC := clang
+CC := clang
 
 # build in
-	BUILD_IN := out
+BUILD_IN := out
 
 # project flags
 override CFLAGS += -std=c11\
-					-O2\
-					-lSDL2\
-					-lSDL2_ttf
+				-O2\
+				-lSDL2\
+				-lSDL2_ttf
 endif
 
 # source code dir
@@ -51,7 +54,7 @@ SRC :=$(wildcard $(DSRC)/*.c)
 # all targets
 .PHONY: all run build debug release clean
 
-ifeq ($(PROJECT_TYPE), "WEB")
+ifeq ($(MODE), $(WEB))
 all: release
 	emrun $(DBUILD)/index.html
 else

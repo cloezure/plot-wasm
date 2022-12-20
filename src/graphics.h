@@ -10,7 +10,7 @@
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void set_fps(int32_t fps);
+void set_fps(int fps);
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -26,7 +26,7 @@ typedef struct Graphics {
   int32_t const height_mid;
   int32_t fps;
   // channel_t **
-  channel_t *channel;
+  channel_t **channels;
 } graphics_t;
 
 graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps);

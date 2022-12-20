@@ -9,6 +9,7 @@
 #include <SDL2/SDL_assert.h>
 #include <SDL2/SDL_hints.h>
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
@@ -16,7 +17,7 @@
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void set_fps(int32_t fps) { graphics->fps = fps; }
+void set_fps(int fps) { graphics->fps = fps; }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -48,18 +49,6 @@ static inline void draw_background(SDL_Color color) {
   SDL_RenderClear(renderer);
 }
 
-static inline void draw_channels(void) {
-  SDL_SetRenderDrawColor(renderer, 0x2C, 0x2C, 0x2C, 0xFF);
-  SDL_RenderFillRect(renderer, &graphics->channel->head_background);
-  SDL_RenderCopy(renderer, graphics->channel->head_text->texture, NULL,
-                 &graphics->channel->head_text->position);
-  SDL_RenderCopy(renderer, graphics->channel->channel_number->texture, NULL,
-                 &graphics->channel->channel_number->position);
-  SDL_RenderCopy(renderer, graphics->channel->plot0_name->texture, NULL,
-                 &graphics->channel->plot0_name->position);
-  SDL_RenderCopy(renderer, graphics->channel->plot1_name->texture, NULL,
-                 &graphics->channel->plot1_name->position);
-}
 
 static inline void draw_fps(void) {
   SDL_Rect pos = {.y = 10};
@@ -71,6 +60,19 @@ static inline void draw_fps(void) {
 
   SDL_RenderCopy(renderer, fps->texture, NULL, &fps->position);
   Text_free(fps);
+}
+
+static inline void draw_channels(void) {
+  SDL_RenderCopy(renderer, graphics->channel->plot0->background, NULL,
+                 &graphics->channel->plot0->position);
+  SDL_RenderCopy(renderer, graphics->channel->plot1->background, NULL,
+                 &graphics->channel->plot1->position);
+  SDL_RenderCopy(renderer, graphics->channel->channel_number->texture, NULL,
+                 &graphics->channel->channel_number->position);
+  SDL_RenderCopy(renderer, graphics->channel->plot0_name->texture, NULL,
+                 &graphics->channel->plot0_name->position);
+  SDL_RenderCopy(renderer, graphics->channel->plot1_name->texture, NULL,
+                 &graphics->channel->plot1_name->position);
 }
 
 static inline void draw(void) {
@@ -146,7 +148,7 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
 
 #if !WIN_AND_REN
   renderer = SDL_CreateRenderer(
-      window, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC);
+      window, -1, 0 /* SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC */ );
 #endif
 
   if (renderer == NULL) {
@@ -163,10 +165,9 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-  new_graphics->channel =
-    Channel_init( (SDL_Point){.x = 100, .y = 100},
-                  "Service channel", "1",
-                   "Serv Tx0", "Serv Tx1");
+  SDL_Point channel_pos = { .x = 0, .y = 0};
+  new_graphics->channel = Channel_init(channel_pos, "1",
+                                       "Tx", "Rx");
 
   return new_graphics;
 }

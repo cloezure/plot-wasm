@@ -10,9 +10,17 @@
 char const *font_type(enum FONT_TYPE type) {
   switch (type) {
   case FONT_R:
+#ifdef __EMSCRIPTEN__
     return "res/Gilroy-Regular.ttf";
+#else
+    return "/home/nim/dev/cpp/plotc-wasm/res/Gilroy-Regular.ttf";
+#endif
   case FONT_B:
+#ifdef __EMSCRIPTEN__
     return "res/Gilroy-Bold.ttf";
+#else
+    return "/home/nim/dev/cpp/plotc-wasm/res/Gilroy-Bold.ttf";
+#endif
   }
 }
 

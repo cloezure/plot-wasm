@@ -9,14 +9,12 @@
 #include "graphics.h"
 
 int32_t main(void) {
-  int32_t const w = 800;
-  int32_t const h = 800;
+  int32_t const w = 1308;
+  int32_t const h = 734;
   int32_t const fps_draw = 60;
 
   graphics = Graphics_init(w, h, fps_draw);
-  if (graphics == NULL) {
-    return EXIT_FAILURE;
-  }
+  assert(graphics != NULL);
 
 #ifdef __EMSCRIPTEN__
   int32_t const simulate_infinite_loop = 1;
