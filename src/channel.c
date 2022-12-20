@@ -62,6 +62,7 @@ channels_t* Channels_init(int32_t count, SDL_Point position) {
 
   SDL_Point dpos = position;
 
+  // automatizirovat snosku po chety tam dpos.x -= some...
   __REPEAT__(count) {
     channels->channels[i] = Channel_init(dpos, i + 1, "Tx", "Rx");
   }

@@ -1,0 +1,9 @@
+* TODO [0%]
+- [ ] Dopisat auto paste channels
+- [ ] Sdelat norm backgound for plots
+- [ ] Protestit draw graphics
+- [ ] Razebat api wasm module
+
+* FUTURES [0%]
+- [ ] Dorabotat modules scale
+- [ ] Dopisat api for off graphics
