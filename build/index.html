@@ -1,53 +1,31 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>WasmTest</title>
-  </head>
-  <body>
-    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-    <script type='text/javascript'>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>WasmTest</title>
+</head>
+<body>
+<canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+<script type='text/javascript'>
 
-     let SSE = new EventSource('http://' + '10.16.0.156' + ':' + 3030 + '/get-all-spectrums');
+    let SSE = new EventSource('http://' + '10.16.0.202' + ':' + 3030 + '/get-all-spectrums');
 
-     let set_fps = null;
-
+     // let Module = require('plot.js')
+     // let set_fps = Module().cwrap('set_fps')
+     //
+     // module.exports = set_fps;
      var Module = {
-         canvas: (function () {
-             var canvas = document.getElementById('canvas');
-             canvas.addEventListener('webglcontextlost', e => {
-                 alert('WebGL context lost. You will need to reload the page.');
-                 e.preventDefault();
-             }, false);
-             return canvas;
+         canvas: (function() {
+             return document.getElementById('canvas');
          })(),
          onRuntimeInitialized: () => {
-             set_fps = Module.cwrap('set_fps', null, ['number']);
-             set_fps(50);
+           Module.ccall('set_fps', null, ['number'], [55]);
          },
      };
 
-     // Module.canvas = () => {
-     //     var canvas = document.getElementById('canvas');
-     //     canvas.addEventListener('webglcontextlost', e => {
-     //            alert('WebGL context lost. You will need to reload the page.');
-     //            e.preventDefault();
-     //        }, false);
-     //     return canvas;
-     // };
-
-         // onRuntimeInitialized: () => {
-         //    Module.ccall('set_fps', null, ['number'], [55]);
-         //    push_data = Module.cwrap('push_data', null, ['string']);
-         // }
-
-     // while(true) {
-     //     Module.ccall('set_fps', null, ['number'], [55]);
-     // }
-
-     SSE.onmessage = msg => {
-         console.log(`${msg}`);
+    SSE.onmessage = msg => {
+         // Module.ccall('_set_fps', null, ['number'], [55]);
      }
     </script>
     <script async type="text/javascript" src="plot.js"></script>

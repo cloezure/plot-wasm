@@ -1,23 +1,17 @@
 #include "graphics.h"
 #include "channel.h"
-#include "colorscheme.h"
 #include "common_function.h"
 #include "global.h"
-#include "text.h"
 #include "parse.h"
 
-#include <SDL2/SDL_assert.h>
-#include <SDL2/SDL_hints.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_surface.h>
-#include <SDL2/SDL_timer.h>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_video.h>
+#include <SDL2/SDL_image.h>
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void set_fps(int fps) { graphics->fps = fps; }
+void set_fps(int fps) { g_graphics->fps = fps; }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -28,86 +22,22 @@ void push_data(char const *data) {
   uint32_t spectrums_count = get_uint32(decode, 0);
   uint32_t reports_count = get_uint32(decode, 4);
   int32_t spectrum_config_size = 4 + 4 + (4 * reports_count);
+  coordlist coordinate_list = NULL;
 
-  /* for(ptrdiff_t spec_idx = 0; spec_idx < spectrums_count; ++spec_idx) { */
-  /*   int32_t offset = 8 + (spec_idx * spectrum_config_size); */
-  /*   int32_t dx = get_float(decode, offset); */
-  /*   int32_t x0 = get_float(decode, offset + 4); */
-  /*   size_t fft_reports_count =  */
-  /*   float* fft_reports = malloc(sizeof(*fft_reports)); */
+  for(ptrdiff_t spec_idx = 0; spec_idx < spectrums_count; ++spec_idx) {
+    int32_t offset = 8 + (spec_idx * spectrum_config_size);
+    int32_t dx = get_float(decode, offset);
+    int32_t x0 = get_float(decode, offset + 4);
+    size_t fft_reports_count = 1024;
+    float* fft_reports = malloc(sizeof(*fft_reports));
 
-  /* } */
+
+  }
 
   // for in dots
   // draw plot
   printf("%s\n", decode);
   free(decode);
-}
-
-static inline void draw_background(SDL_Color color) {
-  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-  SDL_RenderClear(renderer);
-}
-
-
-static inline void draw_fps(void) {
-  SDL_Rect pos = {.y = 10};
-  char buff[100];
-  sprintf(buff, "%d", graphics->fps);
-
-  text_t * fps = Text_init(font_type(FONT_B), 60, COLOR_GREEN, pos, buff);
-  fps->position.x = graphics->width - fps->position.w - 10;
-
-  SDL_RenderCopy(renderer, fps->texture, NULL, &fps->position);
-  Text_free(fps);
-}
-
-static inline void draw_channels(void) {
-  SDL_RenderCopy(renderer, graphics->channel->plot0->background, NULL,
-                 &graphics->channel->plot0->position);
-  SDL_RenderCopy(renderer, graphics->channel->plot1->background, NULL,
-                 &graphics->channel->plot1->position);
-  SDL_RenderCopy(renderer, graphics->channel->channel_number->texture, NULL,
-                 &graphics->channel->channel_number->position);
-  SDL_RenderCopy(renderer, graphics->channel->plot0_name->texture, NULL,
-                 &graphics->channel->plot0_name->position);
-  SDL_RenderCopy(renderer, graphics->channel->plot1_name->texture, NULL,
-                 &graphics->channel->plot1_name->position);
-}
-
-static inline void draw(void) {
-  draw_background(COLOR_BACKGROUND);
-  draw_channels();
-  draw_fps();
-  SDL_RenderPresent(renderer);
-}
-
-void handle_events(void) {
-
-  const int32_t frame_delay = 1000 / graphics->fps;
-  uint32_t frame_start;
-  int32_t frame_time;
-
-  frame_start = SDL_GetTicks();
-
-  SDL_Event event;
-  SDL_PollEvent(&event);
-
-  switch (event.type) {
-  case SDL_QUIT: {
-    Graphics_free(graphics);
-    exit(EXIT_SUCCESS);
-    break;
-  }
-  }
-  draw();
-
-  frame_time = SDL_GetTicks() - frame_start;
-
-  if (frame_delay > frame_time) {
-    SDL_Delay(frame_delay - frame_time);
-  }
-
 }
 
 graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
@@ -161,26 +91,33 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
   }
 
   if (TTF_Init() < 0) {
-    display_error_ttf("ttf could not init");
+    display_error_ttf("TTF could not init");
     return NULL;
   }
 
-  SDL_Point channel_pos = { .x = 0, .y = 0};
-  new_graphics->channel = Channel_init(channel_pos, "1",
-                                       "Tx", "Rx");
+  int32_t flags = IMG_INIT_PNG;
+  if(!IMG_Init(flags) && flags) {
+    display_error_img("Image could not init");
+    return NULL;
+  }
+
+  new_graphics->service_channel = Channels_init(4, (SDL_Point){.x = 0, .y = 0});
+  new_graphics->relay_channel = Channels_init(2, (SDL_Point){.x = 0, .y = 244*2});
 
   return new_graphics;
 }
 
 void Graphics_free(graphics_t *graphics) {
+  Channels_free(graphics->service_channel);
+  Channels_free(graphics->relay_channel);
+  free(graphics);
+  graphics = NULL;
+
   SDL_DestroyRenderer(renderer);
   renderer = NULL;
 
   SDL_DestroyWindow(window);
   window = NULL;
-
-  // free channels
-  Channel_free(graphics->channel);
 
   TTF_Quit();
   SDL_Quit();

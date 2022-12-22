@@ -18,3 +18,6 @@
 
 #define COLOR_CHANNEL_HEAD                                                     \
   (SDL_Color) { 0x76, 0x76, 0x76, 0xFF }
+
+#define COLOR_PLOT_LINE                                                        \
+  (SDL_Color) { 0x3B, 0x94, 0xE5, 0xFF }

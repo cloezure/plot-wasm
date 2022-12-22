@@ -16,11 +16,12 @@ typedef struct Channel {
 
 typedef struct Channels {
   size_t count;
-  channel_t **channels;
+  channel_t **channel;
 } channels_t;
 
 channels_t* Channels_init(int32_t count, SDL_Point position);
 void Channels_free(channels_t* channels);
+channel_t* Channels_chennel(channels_t* channels, uint32_t idx);
 
 channel_t *Channel_init(SDL_Point position, int32_t channel_number,
                         char const *plot0_name, char const *plot1_name);

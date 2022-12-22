@@ -1,9 +1,11 @@
-* TODO [0%]
-- [ ] Dopisat auto paste channels
-- [ ] Sdelat norm backgound for plots
-- [ ] Protestit draw graphics
+* TODO [80%]
+- [X] Peremestit sdl in other file
+- [X] Dopisat auto paste channels
+- [X] Sdelat norm backgound for plots
+- [X] Protestit draw graphics
 - [ ] Razebat api wasm module
 
 * FUTURES [0%]
 - [ ] Dorabotat modules scale
 - [ ] Dopisat api for off graphics
+- [ ] Dobavit mouse show coords

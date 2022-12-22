@@ -19,13 +19,27 @@ ifeq ($(MODE), $(WEB))
 	BUILD_IN := js
 
 # project flags
-# -sMODULARIZE=1
+# override CFLAGS += -std=c11\
+# 				-O3\
+# 				-sUSE_SDL_TTF=2\
+# 				-sUSE_SDL_IMAGE=2\
+# 				-sSINGLE_FILE=1\
+# 				-sENVIRONMENT=web\
+# 				-sEXPORT_ES6=1\
+# 				-sMODULARIZE=1\
+# 				-sSDL2_IMAGE_FORMATS=["png"]\
+# 				-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap']\
+# 				-sUSE_SDL=2\
+# 				--preload-file ./res
+
 override CFLAGS += -std=c11\
 				-Os\
 				-sUSE_SDL_TTF=2\
+				-sUSE_SDL_IMAGE=2\
+				-sSDL2_IMAGE_FORMATS=["png"]\
 				-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap']\
 				-sUSE_SDL=2\
-				-sWASM=1\
+ 				-sASSERTIONS\
 				--preload-file ./res
 
 else
@@ -39,7 +53,8 @@ BUILD_IN := out
 override CFLAGS += -std=c11\
 				-O2\
 				-lSDL2\
-				-lSDL2_ttf
+				-lSDL2_ttf\
+				-lSDL2_image
 endif
 
 # source code dir

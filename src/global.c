@@ -1,5 +1,6 @@
 #include "global.h"
 
-graphics_t *graphics = NULL;
-SDL_Window *window = NULL;
+graphics_t   *g_graphics = NULL;
+SDL_Window   *window   = NULL;
 SDL_Renderer *renderer = NULL;
+char         *g_data   = NULL;

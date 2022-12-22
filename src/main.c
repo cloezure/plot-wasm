@@ -1,20 +1,20 @@
-#include <assert.h>
-#include <stdlib.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
 
+#include <assert.h>
+
 #include "global.h"
 #include "graphics.h"
+#include "draw.h"
 
 int32_t main(void) {
   int32_t const w = 1308;
   int32_t const h = 734;
   int32_t const fps_draw = 60;
 
-  graphics = Graphics_init(w, h, fps_draw);
-  assert(graphics != NULL);
+  g_graphics = Graphics_init(w, h, fps_draw);
+  assert(g_graphics != NULL);
 
 #ifdef __EMSCRIPTEN__
   int32_t const simulate_infinite_loop = 1;
@@ -26,5 +26,5 @@ int32_t main(void) {
     handle_events();
   }
 #endif
-  Graphics_free(graphics);
+  /* Graphics_free(graphics); */
 }
