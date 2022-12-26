@@ -22,10 +22,11 @@ typedef struct Graphics {
   int32_t const height;
   int32_t const width_mid;
   int32_t const height_mid;
+  char const* data_graphics;
   int32_t fps;
 
   channels_t *service_channel;
-  channels_t *relay_channel;
+  channels_relay_t *relay_channel;
 } graphics_t;
 
 graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps);

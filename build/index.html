@@ -1,33 +1,26 @@
 <!doctype html>
 <html>
-<head>
-<meta charset="utf-8">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>WasmTest</title>
-</head>
-<body>
-<canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-<script type='text/javascript'>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>WasmTest</title>
+    </head>
+    <body>
+        <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+        <script type='text/javascript'>
 
-    let SSE = new EventSource('http://' + '10.16.0.202' + ':' + 3030 + '/get-all-spectrums');
+         let SSE = new EventSource('http://' + '10.16.0.202' + ':' + 3030 + '/get-all-spectrums');
 
-     // let Module = require('plot.js')
-     // let set_fps = Module().cwrap('set_fps')
-     //
-     // module.exports = set_fps;
-     var Module = {
-         canvas: (function() {
-             return document.getElementById('canvas');
-         })(),
-         onRuntimeInitialized: () => {
-           Module.ccall('set_fps', null, ['number'], [55]);
-         },
-     };
+         var Module = {
+             canvas: (function() {
+                 return document.getElementById('canvas');
+             })(),
+         };
 
-    SSE.onmessage = msg => {
-         // Module.ccall('_set_fps', null, ['number'], [55]);
-     }
-    </script>
-    <script async type="text/javascript" src="plot.js"></script>
-  </body>
+         // SSE.onmessage = msg => {
+         //     console.log(msg)
+         // }
+        </script>
+        <script async type="text/javascript" src="plot.js"></script>
+    </body>
 </html>
