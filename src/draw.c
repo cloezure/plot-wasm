@@ -21,41 +21,45 @@ static inline void draw_background(SDL_Color color) {
 }
 
 static inline void draw_plots(void) {
+  flag_draw = false;
+
   char *decode = base64_decode(g_graphics->data_graphics);
 
   uint32_t spectrums_count = get_uint32(decode, 0);
   uint32_t reports_count = get_uint32(decode, 4);
   int32_t spectrum_config_size = 4 + 4 + (4 * reports_count);
-  coordlist coordinate_list = NULL;
 
-  if(flag_draw) {
-    puts(decode);
-    printf("spect count = %d\nreports count = %d\nspectrum config size = %d\n",
-           spectrums_count, reports_count, spectrum_config_size);
-    flag_draw = false;
+  plot_t **plots = malloc(sizeof(**plots) * 12);
+  for(size_t i = 0, j = 0; i < 4; ++i, j += 2) {
+    plots[j] = g_graphics->service_channel->channel[i]->plot0;
+    plots[j+1] = g_graphics->service_channel->channel[i]->plot1;
+  }
+  for(size_t i = 0, j = 8; i < 2; ++i, j += 2) {
+    plots[j] = g_graphics->relay_channel->channel[i]->plot0;
+    plots[j+1] = g_graphics->relay_channel->channel[i]->plot1;
   }
 
-  for(ptrdiff_t spec_idx = 0; spec_idx < spectrums_count; ++spec_idx) {
+  SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
+  for(size_t spec_idx = 0; spec_idx < spectrums_count; ++spec_idx) {
     int32_t offset = 8 + (spec_idx * spectrum_config_size);
     int32_t dx = get_float(decode, offset);
-    int32_t ddx = dx;
     int32_t x0 = get_float(decode, offset + 4);
-    /* float* fft_reports = malloc(sizeof(*fft_reports) * spectrum_config_size); */
 
-    /* char buff_fft_reports[100] = {0}; */
-    /* buff_fft_reports = slice(decode, &buff_fft_reports, offset + 8, offset + spectrum_config_size); */
+    float *fft_rep = (float*)decode + offset + 8;
+    for(size_t i = 0; i < spectrum_config_size - 1; ++i) {
+      SDL_RenderDrawLineF(renderer,
+                          plots[i]->position.x + dx,
+                          plots[i]->position.y + fft_rep[i],
+                          plots[i]->position.x + dx + dx,
+                          plots[i]->position.y + fft_rep[i+1]);
+    }
 
-    /* __REPEAT__(spectrum_config_size) { */
-    /*   fft_reports[i] = atof(buff_fft_reports[i]); */
-    /* } */
-
-
-
-    /* free(fft_reports); */
   }
-
-
   free(decode);
+  free(plots);
+
+  free(g_graphics->data_graphics);
+  g_graphics->data_graphics = NULL;
 }
 
 static inline void draw_fps(void) {
@@ -70,49 +74,49 @@ static inline void draw_fps(void) {
   Text_free(fps);
 }
 
-static inline void draw_channels(channels_t *channels) {
+static inline void draw_channels_service(channels_t *channels) {
   __REPEAT__(channels->count) {
 
-    channel_t *channel = channels->channel[i];
+    channel_service_t *channel = (channel_service_t*)channels->channel[i];
     // draw plots background
-    DRAW_IN_REN(channel->plot0->background,
-                &channel->plot0->position);
+    DRAW_IN_REN(channel->channel.plot0->background,
+                &channel->channel.plot0->position);
 
-    DRAW_IN_REN(channel->plot1->background,
-                &channel->plot1->position);
+    DRAW_IN_REN(channel->channel.plot1->background,
+                &channel->channel.plot1->position);
 
     // draw channels number
     DRAW_IN_REN(channel->channel_number->texture,
                 &channel->channel_number->position);
 
     // draw plots name
-    DRAW_IN_REN(channel->plot0_name->texture,
-                &channel->plot0_name->position);
-    DRAW_IN_REN(channel->plot1_name->texture,
-                &channel->plot1_name->position);
+    DRAW_IN_REN(channel->channel.plot0_name->texture,
+                &channel->channel.plot0_name->position);
+    DRAW_IN_REN(channel->channel.plot1_name->texture,
+                &channel->channel.plot1_name->position);
   }
 }
 
-static inline void draw_channels_relay(channels_relay_t *channels) {
+static inline void draw_channels_relay(channels_t *channels) {
   __REPEAT__(channels->count) {
 
-    channel_relay_t *channel = channels->channel[i];
+    channel_relay_t *channel = (channel_relay_t*)channels->channel[i];
     // draw plots background
-    DRAW_IN_REN(channel->plot0->background,
-                &channel->plot0->position);
+    DRAW_IN_REN(channel->channel.plot0->background,
+                &channel->channel.plot0->position);
 
-    DRAW_IN_REN(channel->plot1->background,
-                &channel->plot1->position);
+    DRAW_IN_REN(channel->channel.plot1->background,
+                &channel->channel.plot1->position);
 
     // draw channels number
     DRAW_IN_REN(channel->channel_number,
                 &channel->channel_number_pos);
 
     // draw plots name
-    DRAW_IN_REN(channel->plot0_name->texture,
-                &channel->plot0_name->position);
-    DRAW_IN_REN(channel->plot1_name->texture,
-                &channel->plot1_name->position);
+    DRAW_IN_REN(channel->channel.plot0_name->texture,
+                &channel->channel.plot0_name->position);
+    DRAW_IN_REN(channel->channel.plot1_name->texture,
+                &channel->channel.plot1_name->position);
   }
 }
 
@@ -124,10 +128,12 @@ static inline void draw_line_channel_delim(void) {
 
 static inline void draw(void) {
   draw_background(COLOR_BACKGROUND);
-  draw_channels(g_graphics->service_channel);
+  draw_channels_service(g_graphics->service_channel);
+  draw_channels_relay(g_graphics->relay_channel);
   draw_line_channel_delim();
   draw_channels_relay(g_graphics->relay_channel);
   draw_fps();
+  if(flag_draw) { draw_plots(); }
   SDL_RenderPresent(renderer);
 }
 

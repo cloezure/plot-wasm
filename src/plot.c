@@ -2,8 +2,6 @@
 #include "common_function.h"
 #include "global.h"
 #include "common_function.h"
-#include "llist.h"
-#include "plot_draw.h"
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
@@ -44,20 +42,6 @@ plot_t* Plot_init(SDL_Point position) {
    new_plot->position.w = sur->w;
    new_plot->position.h = sur->h;
    new_plot->background = tex;
-
-   new_plot->params = (plot_params) {
-   .screen_width=sur->w,
-   .screen_heigth=sur->h,
-   .font_text_path=(char*)font_type(FONT_R),
-   .font_text_size=20,
-   .caption_text_x="dB",
-   .caption_text_y="",
-   .caption_list = NULL,
-   .coordinate_list = NULL,
-   .scale_x = 1,
-   .scale_y = 10,
-   .max_x = 150,
-   .max_y = 120};
 
    SDL_FreeSurface(sur);
 

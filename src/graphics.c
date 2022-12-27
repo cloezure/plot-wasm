@@ -11,12 +11,22 @@
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void set_fps(int fps) { g_graphics->fps = fps; }
+void set_fps(int fps) { g_graphics->fps = fps; printf("FPS be set %d", fps);}
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_data(char const *data) { g_graphics->data_graphics = data; flag_draw = true; }
+void push_data(char const *data) {
+  if(g_graphics->data_graphics != NULL) {
+    free(g_graphics->data_graphics);
+    g_graphics->data_graphics = NULL;
+  }
+
+  size_t const len = strlen(data);
+  g_graphics->data_graphics = malloc(sizeof(char) * len);
+  strncpy(g_graphics->data_graphics, data, len);
+  flag_draw = true;
+}
 
 graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
   graphics_t graphics_init = {.width = width,
@@ -81,14 +91,14 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-  new_graphics->service_channel = Channels_init(4, (SDL_Point){.x = 0, .y = 0});
+  new_graphics->service_channel = Channels_service_init(4, (SDL_Point){.x = 0, .y = 0});
   new_graphics->relay_channel = Channels_relay_init(2, (SDL_Point){.x = 0, .y = 244*2});
 
   return new_graphics;
 }
 
 void Graphics_free(graphics_t *graphics) {
-  Channels_free(graphics->service_channel);
+  Channels_service_free(graphics->service_channel);
   Channels_relay_free(graphics->relay_channel);
   free(graphics);
   graphics = NULL;
