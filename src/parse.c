@@ -31,12 +31,6 @@ char* base64_decode(char const* cipher) {
     return plain;
 }
 
-uint32_t get_uint32(char const *data, size_t offset) {
-  uint32_t res = 0;
-  memcpy(&res, data + offset, sizeof(res));
-  return res;
-}
-
 float get_float(char const *data, size_t offset) {
   float res = 0.0f;
   memcpy(&res, data + offset, sizeof(res));

@@ -4,7 +4,6 @@
 
 typedef struct Channel {
   SDL_Point position;
-
   // body
   text_t *plot0_name;
   text_t *plot1_name;
@@ -14,12 +13,12 @@ typedef struct Channel {
 } channel_t;
 
 typedef struct ChannelService {
-  channel_t channel;
+  channel_t *channel;
   text_t *channel_number;
 } channel_service_t;
 
 typedef struct ChannelRelay {
-  channel_t channel;
+  channel_t *channel;
   SDL_Texture *channel_number;
   SDL_Rect channel_number_pos;
 } channel_relay_t;

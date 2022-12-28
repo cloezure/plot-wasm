@@ -31,6 +31,7 @@ override CFLAGS += -std=c11\
 				-sSINGLE_FILE=1\
 				-sMODULARIZE=1\
 				-sASSERTIONS=1\
+				-sALLOW_MEMORY_GROWTH\
 				-sEXPORT_NAME="GraphicsPlot"\
 				--preload-file ./res
 
@@ -66,6 +67,11 @@ all: release
 	cp build/plot.mjs ../radius_control_frontend/src/components/spectrum
 	cp build/plot.data ../radius_control_frontend/public
 	npm start --prefix ../radius_control_frontend
+
+move: release
+	cp build/plot.mjs ../radius_control_frontend/src/components/spectrum
+	cp build/plot.data ../radius_control_frontend/public
+
 else
 
 all: build

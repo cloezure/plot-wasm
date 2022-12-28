@@ -5,5 +5,5 @@
 extern graphics_t   *g_graphics;
 extern SDL_Window   *window;
 extern SDL_Renderer *renderer;
-extern char         *g_data;
-extern bool          flag_draw;
+extern bool          g_graphics_ready;
+extern int32_t const g_plots_count;

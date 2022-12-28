@@ -3,6 +3,7 @@
 #include "common_function.h"
 #include "global.h"
 #include "parse.h"
+#include "plot.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -11,21 +12,31 @@
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void set_fps(int fps) { g_graphics->fps = fps; printf("FPS be set %d", fps);}
+void set_fps(int fps) { g_graphics->fps = fps; }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_data(char const *data) {
-  if(g_graphics->data_graphics != NULL) {
-    free(g_graphics->data_graphics);
-    g_graphics->data_graphics = NULL;
-  }
+void push_data(float *fft, int size, int plot_num) {
+  g_graphics->fft[plot_num] = fft;
+  g_graphics->fft_size = size;
+}
 
-  size_t const len = strlen(data);
-  g_graphics->data_graphics = malloc(sizeof(char) * len);
-  strncpy(g_graphics->data_graphics, data, len);
-  flag_draw = true;
+char buffer_logger[100];
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+char* logger(void) {
+  /* sprintf(buffer_logger, "%lf", sum); */
+  /* return buffer_logger; */
+  return "Logging a void....";
+}
+
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+void draw_plots_data(void) {
+  g_graphics_ready = true;
 }
 
 graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
@@ -34,7 +45,8 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
                               .width_mid = width / 2,
                               .height_mid = height / 2,
                               .fps = fps,
-                              .data_graphics = NULL};
+                              .fft = malloc(sizeof(float*) * g_plots_count),
+                              .fft_size = 0};
 
   graphics_t *new_graphics = NULL;
   new_graphics = malloc(sizeof(*new_graphics));
@@ -100,6 +112,8 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
 void Graphics_free(graphics_t *graphics) {
   Channels_service_free(graphics->service_channel);
   Channels_relay_free(graphics->relay_channel);
+
+  free(graphics->fft);
   free(graphics);
   graphics = NULL;
 
