@@ -15,7 +15,7 @@ void set_fps(int fps);
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_data(float *fft, int size, int plot_num);
+void push_data(float *fft, int size, int plot_idx, float dx, float x0);
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -33,8 +33,7 @@ typedef struct Graphics {
   int32_t const width_mid;
   int32_t const height_mid;
   int32_t fps;
-  float **fft;
-  int32_t fft_size;
+  plot_t **plots;
 
   channels_t *service_channel;
   channels_t *relay_channel;

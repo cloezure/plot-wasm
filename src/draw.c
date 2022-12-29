@@ -9,6 +9,7 @@
 
 #include <SDL2/SDL_assert.h>
 #include <SDL2/SDL_hints.h>
+#include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_timer.h>
@@ -32,15 +33,37 @@ static inline void draw_plots(void) {
   /*   plots[j+1] = g_graphics->relay_channel->channel[i]->plot1; */
   /* } */
 
-  float spc_x = ((channel_service_t*)g_graphics->service_channel->channel[0])->channel->plot0->position.x;
+  int w_back = g_graphics->plots[0]->position.w;
+  int h_back = g_graphics->plots[0]->position.h;
+  float dx = g_graphics->plots[0]->dx;
+  float const x0 = g_graphics->plots[0]->x0;
   SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
   for(size_t i = 0; i < g_plots_count; ++i) {
-    for(size_t j = 0; j < g_graphics->fft_size; ++j) {
-      SDL_RenderDrawLineF(renderer,
-                          j + spc_x,
-                          g_graphics->fft[i][j],
-                          j + 1,
-                          g_graphics->fft[i][j]);
+    float start_x = g_graphics->plots[i]->position.x;
+    float mid_y_plot = (float)g_graphics->plots[i]->position.y + x0 + (float)g_graphics->plots[i]->position.h/2;
+    SDL_FPoint p = {.x = start_x, .y = mid_y_plot};
+    SDL_FPoint n = {.x = p.x, .y = p.y};
+
+    for(size_t j = 0; j < g_graphics->plots[i]->fft_len - 1; ++j) {
+      float const* fft = g_graphics->plots[i]->fft;
+      /* SDL_RenderDrawLineF(renderer, p.x, p.y, p.x + dx, p.y - fft[j+1]); */
+      /* p.x += dx; */
+      /* p.y -= fft[j]; */
+
+      n.y = fft[j] + mid_y_plot;
+      SDL_RenderDrawLineF(renderer, p.x, p.y, n.x, n.y);
+      n.x += dx;
+      p.x = n.x;
+      p.y = n.y;
+
+      /* SDL_RenderDrawLineF(renderer, */
+      /*                     p.x, */
+      /*                     p.y, */
+      /*                     n.x, */
+      /*                     n.y */
+      /* ); */
+      /* n.y = fft[j] + 70 + mid_y_plot; */
+      /* n.x += dx; */
     }
   }
 

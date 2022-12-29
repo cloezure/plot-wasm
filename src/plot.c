@@ -42,6 +42,8 @@ plot_t* Plot_init(SDL_Point position) {
    new_plot->position.w = sur->w;
    new_plot->position.h = sur->h;
    new_plot->background = tex;
+   new_plot->dx = 0.0f;
+   new_plot->x0 = 0.0f;
 
    SDL_FreeSurface(sur);
 

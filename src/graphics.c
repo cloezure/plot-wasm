@@ -17,9 +17,11 @@ void set_fps(int fps) { g_graphics->fps = fps; }
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_data(float *fft, int size, int plot_num) {
-  g_graphics->fft[plot_num] = fft;
-  g_graphics->fft_size = size;
+void push_data(float *fft, int size, int plot_idx, float dx, float x0) {
+  g_graphics->plots[plot_idx]->fft = fft;
+  g_graphics->plots[plot_idx]->fft_len = size;
+  g_graphics->plots[plot_idx]->dx = dx;
+  g_graphics->plots[plot_idx]->x0 = x0;
 }
 
 char buffer_logger[100];
@@ -27,9 +29,12 @@ char buffer_logger[100];
 EMSCRIPTEN_KEEPALIVE
 #endif
 char* logger(void) {
-  /* sprintf(buffer_logger, "%lf", sum); */
-  /* return buffer_logger; */
-  return "Logging a void....";
+  double sum = 0;
+  for(size_t i = 0; i < g_graphics->plots[1]->fft_len; ++i) {
+    sum += g_graphics->plots[1]->fft[i];
+  }
+  sprintf(buffer_logger, "%lf", sum);
+  return buffer_logger;
 }
 
 #ifdef __EMSCRIPTEN__
@@ -45,8 +50,7 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
                               .width_mid = width / 2,
                               .height_mid = height / 2,
                               .fps = fps,
-                              .fft = malloc(sizeof(float*) * g_plots_count),
-                              .fft_size = 0};
+                              .plots = NULL,};
 
   graphics_t *new_graphics = NULL;
   new_graphics = malloc(sizeof(*new_graphics));
@@ -106,6 +110,20 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->service_channel = Channels_service_init(4, (SDL_Point){.x = 0, .y = 0});
   new_graphics->relay_channel = Channels_relay_init(2, (SDL_Point){.x = 0, .y = 244*2});
 
+  new_graphics->plots = malloc(sizeof(plot_t*) * g_plots_count);
+
+  size_t plot_i = 0;
+  for(size_t i = 0; i < new_graphics->service_channel->count; ++i) {
+    new_graphics->plots[plot_i] = ((channel_service_t*)new_graphics->service_channel->channel[i])->channel->plot0;
+    new_graphics->plots[plot_i+1] = ((channel_service_t*)new_graphics->service_channel->channel[i])->channel->plot1;
+    plot_i += 2;
+  }
+
+  for(size_t i = 0; i < new_graphics->relay_channel->count; ++i) {
+    new_graphics->plots[plot_i] = ((channel_relay_t*)new_graphics->relay_channel->channel[i])->channel->plot0;
+    new_graphics->plots[plot_i+1] = ((channel_relay_t*)new_graphics->relay_channel->channel[i])->channel->plot1;
+    plot_i += 2;
+  }
   return new_graphics;
 }
 
@@ -113,7 +131,7 @@ void Graphics_free(graphics_t *graphics) {
   Channels_service_free(graphics->service_channel);
   Channels_relay_free(graphics->relay_channel);
 
-  free(graphics->fft);
+  free(graphics->plots);
   free(graphics);
   graphics = NULL;
 
