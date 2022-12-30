@@ -20,7 +20,7 @@ void push_data(float *fft, int size, int plot_idx, float dx, float x0);
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-char* logger(void);
+char *logger(void);
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -33,11 +33,11 @@ typedef struct Graphics {
   int32_t const width_mid;
   int32_t const height_mid;
   int32_t fps;
-  plot_t **plots;
+  Plot **plots;
 
-  channels_t *service_channel;
-  channels_t *relay_channel;
-} graphics_t;
+  Channels *service_channel;
+  Channels *relay_channel;
+} Graphics;
 
-graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps);
-void Graphics_free(graphics_t *graphics);
+Graphics *Graphics_init(int32_t width, int32_t height, int32_t fps);
+void Graphics_free(Graphics *graphics);

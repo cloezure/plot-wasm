@@ -13,20 +13,20 @@ char const *font_type(enum FONT_TYPE type) {
 #ifdef __EMSCRIPTEN__
     return "res/Gilroy-Regular.ttf";
 #else
-    return "/home/nim/dev/cpp/plotc-wasm/res/Gilroy-Regular.ttf";
+    return "/home/nim/dev/c/plot-wasm/res/Gilroy-Regular.ttf";
 #endif
   case FONT_B:
 #ifdef __EMSCRIPTEN__
     return "res/Gilroy-Bold.ttf";
 #else
-    return "/home/nim/dev/cpp/plotc-wasm/res/Gilroy-Bold.ttf";
+    return "/home/nim/dev/c/plot-wasm/res/Gilroy-Bold.ttf";
 #endif
   }
 }
 
-text_t *Text_init(char const *font_path, int32_t font_size, SDL_Color color,
-                  SDL_Rect position, char const *text) {
-  text_t *new_text = malloc(sizeof(*new_text));
+Text *Text_init(char const *font_path, int32_t font_size, SDL_Color color,
+                SDL_Rect position, char const *text) {
+  Text *new_text = malloc(sizeof(*new_text));
   new_text->font = TTF_OpenFont(font_path, font_size);
 
   if (new_text->font == NULL) {
@@ -55,7 +55,7 @@ text_t *Text_init(char const *font_path, int32_t font_size, SDL_Color color,
   return new_text;
 }
 
-void Text_free(text_t *text) {
+void Text_free(Text *text) {
   if (text == NULL) {
     return;
   }
@@ -74,7 +74,7 @@ void Text_free(text_t *text) {
   text = NULL;
 }
 
-void Text_set_text(text_t *text, char const *info) {
+void Text_set_text(Text *text, char const *info) {
   if (text->font == NULL || text == NULL) {
     return;
   }

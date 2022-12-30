@@ -4,7 +4,7 @@ TARGET := plot
 OUT := 0
 WEB := 1
 # project type
-MODE := $(WEB)
+MODE := $(0)
 ifeq ($(MODE), $(WEB))
 PROJECT_TYPE := "WEB"
 else

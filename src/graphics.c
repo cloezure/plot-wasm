@@ -6,8 +6,8 @@
 #include "plot.h"
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -28,9 +28,9 @@ char buffer_logger[100];
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-char* logger(void) {
+char *logger(void) {
   double sum = 0;
-  for(size_t i = 0; i < g_graphics->plots[1]->fft_len; ++i) {
+  for (size_t i = 0; i < g_graphics->plots[1]->fft_len; ++i) {
     sum += g_graphics->plots[1]->fft[i];
   }
   sprintf(buffer_logger, "%lf", sum);
@@ -40,19 +40,19 @@ char* logger(void) {
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void draw_plots_data(void) {
-  g_graphics_ready = true;
-}
+void draw_plots_data(void) { g_graphics_ready = true; }
 
-graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
-  graphics_t graphics_init = {.width = width,
-                              .height = height,
-                              .width_mid = width / 2,
-                              .height_mid = height / 2,
-                              .fps = fps,
-                              .plots = NULL,};
+Graphics *Graphics_init(int32_t width, int32_t height, int32_t fps) {
+  Graphics graphics_init = {
+      .width = width,
+      .height = height,
+      .width_mid = width / 2,
+      .height_mid = height / 2,
+      .fps = fps,
+      .plots = NULL,
+  };
 
-  graphics_t *new_graphics = NULL;
+  Graphics *new_graphics = NULL;
   new_graphics = malloc(sizeof(*new_graphics));
 
   if (new_graphics == NULL) {
@@ -84,7 +84,7 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
 
 #if !WIN_AND_REN
   renderer = SDL_CreateRenderer(
-      window, -1, 0 /* SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC */ );
+      window, -1, 0 /* SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC */);
 #endif
 
   if (renderer == NULL) {
@@ -102,32 +102,42 @@ graphics_t *Graphics_init(int32_t width, int32_t height, int32_t fps) {
   }
 
   int32_t flags = IMG_INIT_PNG;
-  if(!IMG_Init(flags) && flags) {
+  if (!IMG_Init(flags) && flags) {
     display_error_img("Image could not init");
     return NULL;
   }
 
-  new_graphics->service_channel = Channels_service_init(4, (SDL_Point){.x = 0, .y = 0});
-  new_graphics->relay_channel = Channels_relay_init(2, (SDL_Point){.x = 0, .y = 244*2});
+  new_graphics->service_channel =
+      Channels_service_init(4, (SDL_Point){.x = 0, .y = 0});
+  new_graphics->relay_channel =
+      Channels_relay_init(2, (SDL_Point){.x = 0, .y = 244 * 2});
 
-  new_graphics->plots = malloc(sizeof(plot_t*) * g_plots_count);
+  new_graphics->plots = malloc(sizeof(Plot *) * g_plots_count);
 
   size_t plot_i = 0;
-  for(size_t i = 0; i < new_graphics->service_channel->count; ++i) {
-    new_graphics->plots[plot_i] = ((channel_service_t*)new_graphics->service_channel->channel[i])->channel->plot0;
-    new_graphics->plots[plot_i+1] = ((channel_service_t*)new_graphics->service_channel->channel[i])->channel->plot1;
+  for (size_t i = 0; i < new_graphics->service_channel->count; ++i) {
+    new_graphics->plots[plot_i] =
+        ((Channel_service *)new_graphics->service_channel->channel[i])
+            ->channel->plot0;
+    new_graphics->plots[plot_i + 1] =
+        ((Channel_service *)new_graphics->service_channel->channel[i])
+            ->channel->plot1;
     plot_i += 2;
   }
 
-  for(size_t i = 0; i < new_graphics->relay_channel->count; ++i) {
-    new_graphics->plots[plot_i] = ((channel_relay_t*)new_graphics->relay_channel->channel[i])->channel->plot0;
-    new_graphics->plots[plot_i+1] = ((channel_relay_t*)new_graphics->relay_channel->channel[i])->channel->plot1;
+  for (size_t i = 0; i < new_graphics->relay_channel->count; ++i) {
+    new_graphics->plots[plot_i] =
+        ((Channel_relay *)new_graphics->relay_channel->channel[i])
+            ->channel->plot0;
+    new_graphics->plots[plot_i + 1] =
+        ((Channel_relay *)new_graphics->relay_channel->channel[i])
+            ->channel->plot1;
     plot_i += 2;
   }
   return new_graphics;
 }
 
-void Graphics_free(graphics_t *graphics) {
+void Graphics_free(Graphics *graphics) {
   Channels_service_free(graphics->service_channel);
   Channels_relay_free(graphics->relay_channel);
 
