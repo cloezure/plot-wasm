@@ -140,7 +140,7 @@ static inline void draw(void) {
   draw_channels_relay(g_graphics->relay_channel);
   draw_line_channel_delim();
   draw_channels_relay(g_graphics->relay_channel);
-  draw_fps();
+  /* draw_fps(); */
   if(g_graphics_ready) { draw_plots(); }
   SDL_RenderPresent(renderer);
 }
