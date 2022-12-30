@@ -25,8 +25,8 @@ const Spectrum = () => {
         let view = new DataView(buffer)
 
         let spectrums_count = view.getUint32(0,true) - 1; // 12 plots
-        let reports_count = view.getUint32(4, true);
-        let spectrum_config_size = 4 + 4 + (4 * reports_count);
+        let reports_count = view.getUint32(4, true); // 512
+        let spectrum_config_size = 4 + 4 + (4 * reports_count); // 2056
         let dots_list = [];
 
         // console.log(spectrums_count)
@@ -34,15 +34,22 @@ const Spectrum = () => {
         // console.log(spectrum_config_size)
         if(!loading) {
             const logger = module.cwrap('logger', 'string', null);
-            module.ccall('set_fps', null, ['number'], [100])
+            module._set_fps(19);
 
             for(let spec_idx = 0; spec_idx < spectrums_count; spec_idx++) {
                 let offset = 8 + (spec_idx * spectrum_config_size);
+                let dx = Math.abs(view.getFloat32(offset, true) / (1_000_000_00 - 25_000_000));
+                let x0 = view.getFloat32(offset + 4, true) / 1_000_00;
                 let dots = new Float32Array(buffer.slice(offset + 8, offset + spectrum_config_size));
-                var dots_buffer = module._malloc( dots.length * dots.BYTES_PER_ELEMENT);
+                let dots_buffer = module._malloc(dots.length * dots.BYTES_PER_ELEMENT);
+                // console.log(dots.buffer)
                 module.HEAPF32.set(dots, dots_buffer >> 2);
-                dots_list.push(dots_buffer);
-                module._push_data(dots_buffer, dots.length, 1);
+                dots_list.push(dots_buffer.buffer);
+                module._push_data(dots_buffer,
+                                  reports_count,
+                                  spec_idx,
+                                  dx, x0);
+                // console.log("Sum in = ", module._logger(), "Sum out = ", dots.reduce((a, b) => a + b, 0));
             }
             module._draw_plots_data();
             dots_list.map((dbuf) => module._free(dbuf));
