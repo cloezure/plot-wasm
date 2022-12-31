@@ -86,7 +86,7 @@ static inline void draw_fps(void) {
 static inline void draw_channels_service(Channels *channels) {
   __REPEAT__(channels->count) {
 
-    Channel_service *channel = (Channel_service *)channels->channel[i];
+    Channel_service *channel = (Channel_service *)channels->channels[i];
     // draw plots background
     DRAW_IN_REN(channel->channel->plot0->background,
                 &channel->channel->plot0->position);
@@ -109,7 +109,7 @@ static inline void draw_channels_service(Channels *channels) {
 static inline void draw_channels_relay(Channels *channels) {
   __REPEAT__(channels->count) {
 
-    Channel_relay *channel = (Channel_relay *)channels->channel[i];
+    Channel_relay *channel = (Channel_relay *)channels->channels[i];
     // draw plots background
     DRAW_IN_REN(channel->channel->plot0->background,
                 &channel->channel->plot0->position);

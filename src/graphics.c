@@ -42,6 +42,8 @@ EMSCRIPTEN_KEEPALIVE
 #endif
 void draw_plots_data(void) { g_graphics_ready = true; }
 
+static inline void Graphics_plots_init(Graphics *graphics);
+
 Graphics *Graphics_init(int32_t width, int32_t height, int32_t fps) {
   Graphics graphics_init = {
       .width = width,
@@ -112,29 +114,32 @@ Graphics *Graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->relay_channel =
       Channels_relay_init(2, (SDL_Point){.x = 0, .y = 244 * 2});
 
-  new_graphics->plots = malloc(sizeof(Plot *) * g_plots_count);
+  Graphics_plots_init(new_graphics);
+
+  return new_graphics;
+}
+
+static inline void Graphics_plots_init(Graphics *graphics) {
+  graphics->plots = malloc(sizeof(Plot *) * g_plots_count);
 
   size_t plot_i = 0;
-  for (size_t i = 0; i < new_graphics->service_channel->count; ++i) {
-    new_graphics->plots[plot_i] =
-        ((Channel_service *)new_graphics->service_channel->channel[i])
+  for (size_t i = 0; i < graphics->service_channel->count; ++i) {
+    graphics->plots[plot_i] =
+        ((Channel_service *)graphics->service_channel->channels[i])
             ->channel->plot0;
-    new_graphics->plots[plot_i + 1] =
-        ((Channel_service *)new_graphics->service_channel->channel[i])
+    graphics->plots[plot_i + 1] =
+        ((Channel_service *)graphics->service_channel->channels[i])
             ->channel->plot1;
     plot_i += 2;
   }
 
-  for (size_t i = 0; i < new_graphics->relay_channel->count; ++i) {
-    new_graphics->plots[plot_i] =
-        ((Channel_relay *)new_graphics->relay_channel->channel[i])
-            ->channel->plot0;
-    new_graphics->plots[plot_i + 1] =
-        ((Channel_relay *)new_graphics->relay_channel->channel[i])
-            ->channel->plot1;
+  for (size_t i = 0; i < graphics->relay_channel->count; ++i) {
+    graphics->plots[plot_i] =
+        ((Channel_relay *)graphics->relay_channel->channels[i])->channel->plot0;
+    graphics->plots[plot_i + 1] =
+        ((Channel_relay *)graphics->relay_channel->channels[i])->channel->plot1;
     plot_i += 2;
   }
-  return new_graphics;
 }
 
 void Graphics_free(Graphics *graphics) {

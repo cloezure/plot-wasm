@@ -25,7 +25,7 @@ typedef struct ChannelRelay {
 
 typedef struct Channels {
   size_t count;
-  Channel **channel;
+  Channel **channels;
 } Channels;
 
 //---------------------------------------------------------------------------------------

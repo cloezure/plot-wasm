@@ -89,12 +89,12 @@ void Channel_service_free(Channel *channel) {
 Channels *Channels_service_init(int32_t count, SDL_Point position) {
   Channels *channels = malloc(sizeof(*channels));
   channels->count = count;
-  channels->channel = malloc(sizeof(Channel) * count);
+  channels->channels = malloc(sizeof(Channel) * count);
 
   SDL_Point dpos = position;
 
   __REPEAT__(count) {
-    channels->channel[i] = Channel_service_init(dpos, i + 1, "Tx", "Rx");
+    channels->channels[i] = Channel_service_init(dpos, i + 1, "Tx", "Rx");
 
     if (!iseven(i)) {
       dpos.y += 244;
@@ -113,14 +113,14 @@ void Channels_service_free(Channels *channels) {
   }
 
   __REPEAT__(channels->count) {
-    if (channels->channel[i] == NULL)
+    if (channels->channels[i] == NULL)
       continue;
-    Channel_service_free(channels->channel[i]);
-    channels->channel[i] = NULL;
+    Channel_service_free(channels->channels[i]);
+    channels->channels[i] = NULL;
   }
 
-  free(channels->channel);
-  channels->channel = NULL;
+  free(channels->channels);
+  channels->channels = NULL;
 
   free(channels);
   channels = NULL;
@@ -198,12 +198,12 @@ void Channel_relay_free(Channel *channel) {
 Channels *Channels_relay_init(int32_t count, SDL_Point position) {
   Channels *channels = malloc(sizeof(*channels));
   channels->count = count;
-  channels->channel = malloc(sizeof(Channel) * count);
+  channels->channels = malloc(sizeof(Channel) * count);
 
   SDL_Point dpos = position;
 
   __REPEAT__(count) {
-    channels->channel[i] = Channel_relay_init(dpos, i, "Tx", "Rx");
+    channels->channels[i] = Channel_relay_init(dpos, i, "Tx", "Rx");
 
     if (!iseven(i)) {
       dpos.y += 244;
@@ -222,14 +222,14 @@ void Channels_relay_free(Channels *channels) {
   }
 
   __REPEAT__(channels->count) {
-    if (channels->channel[i] == NULL)
+    if (channels->channels[i] == NULL)
       continue;
-    Channel_relay_free(channels->channel[i]);
-    channels->channel[i] = NULL;
+    Channel_relay_free(channels->channels[i]);
+    channels->channels[i] = NULL;
   }
 
-  free(channels->channel);
-  channels->channel = NULL;
+  free(channels->channels);
+  channels->channels = NULL;
 
   free(channels);
   channels = NULL;
