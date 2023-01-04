@@ -7,6 +7,7 @@
 
 struct channel {
   SDL_Point position;
+
   // body
   struct text *plot0_name;
   struct text *plot1_name;
@@ -32,21 +33,23 @@ struct channels {
 };
 
 //---------------------------------------------------------------------------------------
-struct channel *channel_relay_init(SDL_Point position, int32_t channel_number,
-                                   char const *plot0_name,
-                                   char const *plot1_name);
+struct channel *channel_relay_crealloc(SDL_Point position,
+                                       int32_t channel_number,
+                                       char const *plot0_name,
+                                       char const *plot1_name);
 void channel_relay_free(struct channel *channel);
 
-struct channels *channels_relay_init(size_t count, SDL_Point position);
+struct channels *channels_relay_crealloc(size_t count, SDL_Point position);
 void channels_relay_free(struct channels *channels);
 //---------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------
-struct channel *channel_service_init(SDL_Point position, int32_t channel_number,
-                                     char const *plot0_name,
-                                     char const *plot1_name);
+struct channel *channel_service_crealloc(SDL_Point position,
+                                         int32_t channel_number,
+                                         char const *plot0_name,
+                                         char const *plot1_name);
 void channel_service_free(struct channel *channel);
 
-struct channels *channels_service_init(size_t count, SDL_Point position);
+struct channels *channels_service_crealloc(size_t count, SDL_Point position);
 void channels_service_free(struct channels *channels);
 //---------------------------------------------------------------------------------------

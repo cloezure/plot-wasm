@@ -16,5 +16,5 @@ struct plot {
   } fft;
 };
 
-struct plot *plot_init(SDL_Point position);
+struct plot *plot_crealloc(SDL_Point position);
 void plot_free(struct plot *plot);

@@ -23,8 +23,6 @@ static inline void draw_background(SDL_Color color) {
 
 static inline void draw_plots(void) {
 
-  /* int w_back = g_graphics->plots[0]->position.w; */
-  /* int h_back = g_graphics->plots[0]->position.h; */
   float const dx = g_graphics->plots[0]->fft.dx;
   float const x0 = g_graphics->plots[0]->fft.x0;
   SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
@@ -54,57 +52,55 @@ inline void draw_fps(void) {
   char buff[100] = {0};
   sprintf(buff, "%d", g_graphics->fps);
 
-  struct text *fps = text_init(TEXT_FONT_BOLD, 60, COLOR_GREEN, pos, buff);
+  struct text *fps = text_crealloc(TEXT_FONT_BOLD, 60, COLOR_GREEN, pos, buff);
   fps->position.x = g_graphics->width - fps->position.w - 10;
 
   _draw_in_ren_(fps->texture, &fps->position);
   text_free(fps);
 }
 
+static inline void draw_plots_background(struct channel *channel) {
+  // draw plots background
+  _draw_in_ren_(channel->plot0->background, &channel->plot0->position);
+
+  _draw_in_ren_(channel->plot1->background, &channel->plot1->position);
+}
+
+static inline void draw_plots_name(struct channel *channel) {
+  _draw_in_ren_(channel->plot0_name->texture, &channel->plot0_name->position);
+  _draw_in_ren_(channel->plot1_name->texture, &channel->plot1_name->position);
+}
+
 static inline void draw_channels_service(struct channels *channels) {
   for (size_t i = 0; i < channels->count; ++i) {
 
-    struct channel_service *channel =
+    struct channel_service *schannel =
         (struct channel_service *)channels->channels[i];
-    // draw plots background
-    _draw_in_ren_(channel->channel->plot0->background,
-                  &channel->channel->plot0->position);
 
-    _draw_in_ren_(channel->channel->plot1->background,
-                  &channel->channel->plot1->position);
+    draw_plots_background(schannel->channel);
+
+    draw_plots_name(schannel->channel);
 
     // draw channels number
-    _draw_in_ren_(channel->channel_number->texture,
-                  &channel->channel_number->position);
-
-    // draw plots name
-    _draw_in_ren_(channel->channel->plot0_name->texture,
-                  &channel->channel->plot0_name->position);
-    _draw_in_ren_(channel->channel->plot1_name->texture,
-                  &channel->channel->plot1_name->position);
+    _draw_in_ren_(schannel->channel_number->texture,
+                  &schannel->channel_number->position);
   }
 }
 
 static inline void draw_channels_relay(struct channels *channels) {
   for (size_t i = 0; i < channels->count; ++i) {
 
-    struct channel_relay *channel =
+    struct channel_relay *rchannel =
         (struct channel_relay *)channels->channels[i];
+
     // draw plots background
-    _draw_in_ren_(channel->channel->plot0->background,
-                  &channel->channel->plot0->position);
-
-    _draw_in_ren_(channel->channel->plot1->background,
-                  &channel->channel->plot1->position);
-
-    // draw channels number
-    _draw_in_ren_(channel->channel_number, &channel->channel_number_pos);
+    draw_plots_background(rchannel->channel);
 
     // draw plots name
-    _draw_in_ren_(channel->channel->plot0_name->texture,
-                  &channel->channel->plot0_name->position);
-    _draw_in_ren_(channel->channel->plot1_name->texture,
-                  &channel->channel->plot1_name->position);
+    draw_plots_name(rchannel->channel);
+
+    // draw channels number
+    _draw_in_ren_(rchannel->channel_number, &rchannel->channel_number_pos);
   }
 }
 
@@ -127,7 +123,7 @@ static inline void draw(void) {
 }
 
 void handle_events(void) {
-  const int32_t frame_delay = 1000 / g_graphics->fps;
+  int32_t const frame_delay = 1000 / g_graphics->fps;
   uint32_t frame_start;
   int32_t frame_time;
 

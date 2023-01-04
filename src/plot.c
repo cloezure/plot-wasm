@@ -6,7 +6,7 @@
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_surface.h>
 
-struct plot *plot_init(SDL_Point position) {
+struct plot *plot_crealloc(SDL_Point position) {
 
 #if BMP_BACKGROUND_FOR_PLOT
   SDL_Surface *sur = SDL_LoadBMP("res/plot_back.bmp");

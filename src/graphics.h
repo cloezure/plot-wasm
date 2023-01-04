@@ -39,5 +39,5 @@ struct graphics {
   struct channels *relay_channel;
 };
 
-struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps);
+struct graphics *graphics_crealloc(int32_t width, int32_t height, int32_t fps);
 void graphics_free(struct graphics *graphics);

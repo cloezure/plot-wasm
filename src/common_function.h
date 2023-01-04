@@ -16,11 +16,11 @@ static inline void display_error_img(char const *info) {
   printf("%s! IMG_Error: %s\n", info, IMG_GetError());
 }
 
-#define REPEAT(count)                                                          \
+#define _repeat_(count)                                                        \
   for (size_t hidden_idx = 0; hidden_idx < tmp_count; ++hidden_idx)
 
-#define LOOP for (;;)
-#define UNUSED (void)
+#define _loop_ for (;;)
+#define _unused_ (void)
 
 static inline bool is_even(int32_t number) { return number % 2 == 0; }
 

@@ -14,7 +14,7 @@ int main(void) {
   int32_t const h = 734;
   int32_t const fps_draw = 60;
 
-  g_graphics = graphics_init(w, h, fps_draw);
+  g_graphics = graphics_crealloc(w, h, fps_draw);
   assert(g_graphics);
 
 #ifdef __EMSCRIPTEN__
@@ -23,7 +23,7 @@ int main(void) {
   /* emscripten_set_some_callback("canvas0", NULL, EM_FALSE, NULL); */
   emscripten_set_main_loop(handle_events, fps, simulate_infinite_loop);
 #else
-  LOOP { handle_events(); }
+  _loop_ { handle_events(); }
 #endif
   /* Graphics_free(graphics); */
 }
