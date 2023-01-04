@@ -6,9 +6,7 @@
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_surface.h>
 
-#define BMP_BACKGROUND_FOR_PLOT 0
-
-Plot *Plot_init(SDL_Point position) {
+struct plot *plot_init(SDL_Point position) {
 
 #if BMP_BACKGROUND_FOR_PLOT
   SDL_Surface *sur = SDL_LoadBMP("res/plot_back.bmp");
@@ -21,7 +19,7 @@ Plot *Plot_init(SDL_Point position) {
   SDL_SetColorKey(sur, SDL_TRUE, color_key);
 
 #else
-  SDL_Surface *sur = IMG_Load("res/plot_back.png");
+  SDL_Surface *sur = IMG_Load(PLOT_BACKGROUND_PNG);
   if (sur == NULL) {
     display_error_img("Can't load plot_back.png");
     return NULL;
@@ -35,21 +33,21 @@ Plot *Plot_init(SDL_Point position) {
     return NULL;
   }
 
-  Plot *new_plot = malloc(sizeof(*new_plot));
+  struct plot *new_plot = malloc(sizeof *new_plot);
   new_plot->position.x = position.x;
   new_plot->position.y = position.y;
   new_plot->position.w = sur->w;
   new_plot->position.h = sur->h;
   new_plot->background = tex;
-  new_plot->dx = 0.0f;
-  new_plot->x0 = 0.0f;
+  new_plot->fft.dx = 0.0f;
+  new_plot->fft.x0 = 0.0f;
 
   SDL_FreeSurface(sur);
 
   return new_plot;
 }
 
-void Plot_free(Plot *plot) {
+void plot_free(struct plot *plot) {
   if (plot == NULL) {
     printf("plot == NULL");
     return;

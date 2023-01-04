@@ -1,28 +1,27 @@
 #pragma once
-#include <stdbool.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
+#include <stdbool.h>
 
-static inline void display_error_sdl(char const* info) {
+static inline void display_error_sdl(char const *info) {
   printf("%s! SDL_Error: %s\n", info, SDL_GetError());
 }
 
-static inline void display_error_ttf(char const* info) {
+static inline void display_error_ttf(char const *info) {
   printf("%s! TTF_Error: %s\n", info, TTF_GetError());
 }
 
-static inline void display_error_img(char const* info) {
+static inline void display_error_img(char const *info) {
   printf("%s! IMG_Error: %s\n", info, IMG_GetError());
 }
 
-#define __REPEAT__(COUNT)                       \
-  for(ptrdiff_t i = 0; i < COUNT; ++i)
+#define REPEAT(count)                                                          \
+  for (size_t hidden_idx = 0; hidden_idx < tmp_count; ++hidden_idx)
 
-static inline bool iseven(int32_t number) {
-  return number % 2 == 0;
-}
+#define LOOP for (;;)
+#define UNUSED (void)
 
-static inline bool isodd(int32_t number) {
-  return number % 2 != 0;
-}
+static inline bool is_even(int32_t number) { return number % 2 == 0; }
+
+static inline bool is_odd(int32_t number) { return number % 2 != 0; }

@@ -1,15 +1,20 @@
 #pragma once
 #include <SDL2/SDL.h>
 
-typedef struct Plot {
+#define BMP_BACKGROUND_FOR_PLOT 0
+#define PLOT_BACKGROUND_PNG "res/plot_back.png"
+
+struct plot {
   SDL_Rect position;
   SDL_Texture *background;
 
-  float *fft;
-  int32_t fft_len;
-  float dx;
-  float x0;
-} Plot;
+  struct fft {
+    float *data;
+    size_t length;
+    float dx;
+    float x0;
+  } fft;
+};
 
-Plot *Plot_init(SDL_Point position);
-void Plot_free(Plot *plot);
+struct plot *plot_init(SDL_Point position);
+void plot_free(struct plot *plot);

@@ -43,7 +43,10 @@ CC := clang
 BUILD_IN := out
 
 # project flags
-override CFLAGS += -std=c11\
+override CFLAGS += -std=c17\
+				-Wall\
+				-Wextra\
+				-pedantic\
 				-O2\
 				-lSDL2\
 				-lSDL2_ttf\

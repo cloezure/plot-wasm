@@ -3,19 +3,18 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdint.h>
 
-typedef struct Text {
+#define TEXT_FONT_REGULAR "res/Gilroy-Regular.ttf"
+#define TEXT_FONT_BOLD "res/Gilroy-Bold.ttf"
+
+struct text {
   TTF_Font *font;
   SDL_Texture *texture;
   SDL_Color color;
   SDL_Rect position;
-} Text;
+};
 
-enum FONT_TYPE { FONT_R, FONT_B };
+struct text *text_init(char const *font_path, int32_t font_size,
+                       SDL_Color color, SDL_Rect position, char const *text);
+void text_free(struct text *text);
 
-char const *font_type(enum FONT_TYPE type);
-
-Text *Text_init(char const *font_path, int32_t font_size, SDL_Color color,
-                SDL_Rect position, char const *text);
-void Text_free(Text *text);
-
-void Text_set_text(Text *text, char const *info);
+void text_set_text(struct text *text, char const *info);

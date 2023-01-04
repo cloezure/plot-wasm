@@ -8,6 +8,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <assert.h>
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -17,11 +18,11 @@ void set_fps(int fps) { g_graphics->fps = fps; }
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_data(float *fft, int size, int plot_idx, float dx, float x0) {
-  g_graphics->plots[plot_idx]->fft = fft;
-  g_graphics->plots[plot_idx]->fft_len = size;
-  g_graphics->plots[plot_idx]->dx = dx;
-  g_graphics->plots[plot_idx]->x0 = x0;
+void push_data(int plot_idx, float *data, int length, float dx, float x0) {
+  g_graphics->plots[plot_idx]->fft.data = data;
+  g_graphics->plots[plot_idx]->fft.length = length;
+  g_graphics->plots[plot_idx]->fft.dx = dx;
+  g_graphics->plots[plot_idx]->fft.x0 = x0;
 }
 
 char buffer_logger[100];
@@ -29,11 +30,7 @@ char buffer_logger[100];
 EMSCRIPTEN_KEEPALIVE
 #endif
 char *logger(void) {
-  double sum = 0;
-  for (size_t i = 0; i < g_graphics->plots[1]->fft_len; ++i) {
-    sum += g_graphics->plots[1]->fft[i];
-  }
-  sprintf(buffer_logger, "%lf", sum);
+  sprintf(buffer_logger, "%s", "Some log..");
   return buffer_logger;
 }
 
@@ -42,26 +39,17 @@ EMSCRIPTEN_KEEPALIVE
 #endif
 void draw_plots_data(void) { g_graphics_ready = true; }
 
-static inline void Graphics_plots_init(Graphics *graphics);
+static inline void graphics_plots_init(struct graphics *graphics);
 
-Graphics *Graphics_init(int32_t width, int32_t height, int32_t fps) {
-  Graphics graphics_init = {
-      .width = width,
-      .height = height,
-      .width_mid = width / 2,
-      .height_mid = height / 2,
-      .fps = fps,
-      .plots = NULL,
-  };
-
-  Graphics *new_graphics = NULL;
-  new_graphics = malloc(sizeof(*new_graphics));
-
-  if (new_graphics == NULL) {
-    puts("malloc could not allocate memory for graphics");
-    return NULL;
-  }
-  memcpy(new_graphics, &graphics_init, sizeof(*new_graphics));
+struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
+  struct graphics *new_graphics = malloc(sizeof *new_graphics);
+  assert(new_graphics);
+  new_graphics->width = width;
+  new_graphics->height = height;
+  new_graphics->width_mid = width / 2;
+  new_graphics->height = height / 2;
+  new_graphics->fps = fps;
+  new_graphics->plots = NULL;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     display_error_sdl("sdl could not init");
@@ -110,41 +98,43 @@ Graphics *Graphics_init(int32_t width, int32_t height, int32_t fps) {
   }
 
   new_graphics->service_channel =
-      Channels_service_init(4, (SDL_Point){.x = 0, .y = 0});
+      channels_service_init(4, (SDL_Point){.x = 0, .y = 0});
   new_graphics->relay_channel =
-      Channels_relay_init(2, (SDL_Point){.x = 0, .y = 244 * 2});
+      channels_relay_init(2, (SDL_Point){.x = 0, .y = 244 * 2});
 
-  Graphics_plots_init(new_graphics);
+  graphics_plots_init(new_graphics);
 
   return new_graphics;
 }
 
-static inline void Graphics_plots_init(Graphics *graphics) {
-  graphics->plots = malloc(sizeof(Plot *) * g_plots_count);
+static inline void graphics_plots_init(struct graphics *graphics) {
+  graphics->plots = malloc(sizeof(struct plot *) * g_plots_count);
 
   size_t plot_i = 0;
   for (size_t i = 0; i < graphics->service_channel->count; ++i) {
     graphics->plots[plot_i] =
-        ((Channel_service *)graphics->service_channel->channels[i])
+        ((struct channel_service *)graphics->service_channel->channels[i])
             ->channel->plot0;
     graphics->plots[plot_i + 1] =
-        ((Channel_service *)graphics->service_channel->channels[i])
+        ((struct channel_service *)graphics->service_channel->channels[i])
             ->channel->plot1;
     plot_i += 2;
   }
 
   for (size_t i = 0; i < graphics->relay_channel->count; ++i) {
     graphics->plots[plot_i] =
-        ((Channel_relay *)graphics->relay_channel->channels[i])->channel->plot0;
+        ((struct channel_relay *)graphics->relay_channel->channels[i])
+            ->channel->plot0;
     graphics->plots[plot_i + 1] =
-        ((Channel_relay *)graphics->relay_channel->channels[i])->channel->plot1;
+        ((struct channel_relay *)graphics->relay_channel->channels[i])
+            ->channel->plot1;
     plot_i += 2;
   }
 }
 
-void Graphics_free(Graphics *graphics) {
-  Channels_service_free(graphics->service_channel);
-  Channels_relay_free(graphics->relay_channel);
+void graphics_free(struct graphics *graphics) {
+  channels_service_free(graphics->service_channel);
+  channels_relay_free(graphics->relay_channel);
 
   free(graphics->plots);
   free(graphics);

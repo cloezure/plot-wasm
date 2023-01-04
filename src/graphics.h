@@ -15,7 +15,7 @@ void set_fps(int fps);
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_data(float *fft, int size, int plot_idx, float dx, float x0);
+void push_data(int plot_idx, float *data, int length, float dx, float x0);
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -27,17 +27,17 @@ EMSCRIPTEN_KEEPALIVE
 #endif
 void draw_plots_data(void);
 
-typedef struct Graphics {
-  int32_t const width;
-  int32_t const height;
-  int32_t const width_mid;
-  int32_t const height_mid;
+struct graphics {
+  int32_t width;
+  int32_t height;
+  int32_t width_mid;
+  int32_t height_mid;
   int32_t fps;
-  Plot **plots;
+  struct plot **plots;
 
-  Channels *service_channel;
-  Channels *relay_channel;
-} Graphics;
+  struct channels *service_channel;
+  struct channels *relay_channel;
+};
 
-Graphics *Graphics_init(int32_t width, int32_t height, int32_t fps);
-void Graphics_free(Graphics *graphics);
+struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps);
+void graphics_free(struct graphics *graphics);

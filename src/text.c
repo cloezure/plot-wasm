@@ -7,18 +7,9 @@
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
 
-char const *font_type(enum FONT_TYPE type) {
-  switch (type) {
-  case FONT_R:
-    return "res/Gilroy-Regular.ttf";
-  case FONT_B:
-    return "res/Gilroy-Bold.ttf";
-  }
-}
-
-Text *Text_init(char const *font_path, int32_t font_size, SDL_Color color,
-                SDL_Rect position, char const *text) {
-  Text *new_text = malloc(sizeof(*new_text));
+struct text *text_init(char const *font_path, int32_t font_size,
+                       SDL_Color color, SDL_Rect position, char const *text) {
+  struct text *new_text = malloc(sizeof *new_text);
   new_text->font = TTF_OpenFont(font_path, font_size);
 
   if (new_text->font == NULL) {
@@ -47,27 +38,23 @@ Text *Text_init(char const *font_path, int32_t font_size, SDL_Color color,
   return new_text;
 }
 
-void Text_free(Text *text) {
+void text_free(struct text *text) {
   if (text == NULL) {
     return;
   }
 
-  if (text->font != NULL) {
-    TTF_CloseFont(text->font);
-    text->font = NULL;
-  }
+  TTF_CloseFont(text->font);
+  text->font = NULL;
 
-  if (text->texture != NULL) {
-    SDL_DestroyTexture(text->texture);
-    text->texture = NULL;
-  }
+  SDL_DestroyTexture(text->texture);
+  text->texture = NULL;
 
   free(text);
   text = NULL;
 }
 
-void Text_set_text(Text *text, char const *info) {
-  if (text->font == NULL || text == NULL) {
+void text_set_text(struct text *text, char const *info) {
+  if (text == NULL) {
     return;
   }
 
@@ -75,11 +62,6 @@ void Text_set_text(Text *text, char const *info) {
 
   if (sur == NULL) {
     display_error_sdl("surface in text could not be init");
-  }
-
-  if (text->texture == NULL) {
-    SDL_FreeSurface(sur);
-    return;
   }
 
   SDL_DestroyTexture(text->texture);
