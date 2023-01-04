@@ -18,7 +18,11 @@ void set_fps(int fps) { g_graphics->fps = fps; }
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_data(int plot_idx, float *data, int length, float dx, float x0) {
+void trans_plot_data(int plot_idx, float *data, int length, float dx,
+                     float x0) {
+  if (plot_idx < 0 || plot_idx > g_plots_count)
+    return;
+
   g_graphics->plots[plot_idx]->fft.data = data;
   g_graphics->plots[plot_idx]->fft.length = length;
   g_graphics->plots[plot_idx]->fft.dx = dx;

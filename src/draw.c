@@ -22,14 +22,13 @@ static inline void draw_background(SDL_Color color) {
 }
 
 static inline void draw_plots(void) {
-
-  float const dx = g_graphics->plots[0]->fft.dx;
-  float const x0 = g_graphics->plots[0]->fft.x0;
   SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
   for (size_t i = 0; i < g_plots_count; ++i) {
-    float start_x = g_graphics->plots[i]->position.x;
-    float mid_y_plot = (float)g_graphics->plots[i]->position.y + x0 +
-                       (float)g_graphics->plots[i]->position.h / 2;
+    float const dx = g_graphics->plots[i]->fft.dx;
+    float const x0 = g_graphics->plots[i]->fft.x0;
+    float const start_x = g_graphics->plots[i]->position.x;
+    float const mid_y_plot = (float)g_graphics->plots[i]->position.y + x0 +
+                             (float)g_graphics->plots[i]->position.h / 2;
     SDL_FPoint prev = {.x = start_x, .y = mid_y_plot};
     SDL_FPoint next = {.x = prev.x, .y = prev.y};
 

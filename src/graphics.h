@@ -15,7 +15,7 @@ void set_fps(int fps);
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void push_data(int plot_idx, float *data, int length, float dx, float x0);
+void trans_plot_data(int plot_idx, float *data, int length, float dx, float x0);
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
