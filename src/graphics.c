@@ -47,7 +47,7 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->width = width;
   new_graphics->height = height;
   new_graphics->width_mid = width / 2;
-  new_graphics->height = height / 2;
+  new_graphics->height_mid = height / 2;
   new_graphics->fps = fps;
   new_graphics->plots = NULL;
 
