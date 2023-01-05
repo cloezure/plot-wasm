@@ -20,7 +20,7 @@ EMSCRIPTEN_KEEPALIVE
 #endif
 void trans_plot_data(int plot_idx, float *data, int length, float dx,
                      float x0) {
-  if (plot_idx < 0 || plot_idx > g_plots_count)
+  if (plot_idx < 0 || plot_idx > (int)g_plots_count)
     return;
 
   g_graphics->plots[plot_idx]->fft.data = data;

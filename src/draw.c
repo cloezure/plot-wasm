@@ -54,20 +54,20 @@ inline void draw_fps(void) {
   struct text *fps = text_crealloc(TEXT_FONT_BOLD, 60, COLOR_GREEN, pos, buff);
   fps->position.x = g_graphics->width - fps->position.w - 10;
 
-  _draw_in_ren_(fps->texture, &fps->position);
+  DRAW_IN_REN(fps->texture, &fps->position);
   text_free(fps);
 }
 
 static inline void draw_plots_background(struct channel *channel) {
   // draw plots background
-  _draw_in_ren_(channel->plot0->background, &channel->plot0->position);
+  DRAW_IN_REN(channel->plot0->background, &channel->plot0->position);
 
-  _draw_in_ren_(channel->plot1->background, &channel->plot1->position);
+  DRAW_IN_REN(channel->plot1->background, &channel->plot1->position);
 }
 
 static inline void draw_plots_name(struct channel *channel) {
-  _draw_in_ren_(channel->plot0_name->texture, &channel->plot0_name->position);
-  _draw_in_ren_(channel->plot1_name->texture, &channel->plot1_name->position);
+  DRAW_IN_REN(channel->plot0_name->texture, &channel->plot0_name->position);
+  DRAW_IN_REN(channel->plot1_name->texture, &channel->plot1_name->position);
 }
 
 static inline void draw_channels_service(struct channels *channels) {
@@ -81,8 +81,8 @@ static inline void draw_channels_service(struct channels *channels) {
     draw_plots_name(schannel->channel);
 
     // draw channels number
-    _draw_in_ren_(schannel->channel_number->texture,
-                  &schannel->channel_number->position);
+    DRAW_IN_REN(schannel->channel_number->texture,
+                &schannel->channel_number->position);
   }
 }
 
@@ -99,7 +99,7 @@ static inline void draw_channels_relay(struct channels *channels) {
     draw_plots_name(rchannel->channel);
 
     // draw channels number
-    _draw_in_ren_(rchannel->channel_number, &rchannel->channel_number_pos);
+    DRAW_IN_REN(rchannel->channel_number, &rchannel->channel_number_pos);
   }
 }
 

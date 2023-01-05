@@ -23,7 +23,7 @@ int main(void) {
   /* emscripten_set_some_callback("canvas0", NULL, EM_FALSE, NULL); */
   emscripten_set_main_loop(handle_events, fps, simulate_infinite_loop);
 #else
-  _loop_ { handle_events(); }
+  LOOP { handle_events(); }
 #endif
   /* Graphics_free(graphics); */
 }
