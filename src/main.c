@@ -25,5 +25,6 @@ int main(void) {
 #else
   LOOP { handle_events(); }
 #endif
-  /* Graphics_free(graphics); */
+  graphics_free(g_graphics);
+  return EXIT_SUCCESS;
 }
