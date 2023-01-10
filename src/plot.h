@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 
 #define BMP_BACKGROUND_FOR_PLOT 0
 #define PLOT_BACKGROUND_PNG "res/plot_back.png"

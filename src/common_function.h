@@ -25,3 +25,12 @@ static inline void display_error_img(char const *info) {
 static inline bool is_even(int32_t number) { return number % 2 == 0; }
 
 static inline bool is_odd(int32_t number) { return number % 2 != 0; }
+
+static inline bool check_zero_array(float *data, size_t length) {
+  for(size_t i = 0; i < length; ++i) {
+    if(data[i] != 0.0f) {
+      return false;
+    }
+  }
+  return true;
+}

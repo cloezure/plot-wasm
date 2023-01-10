@@ -41,6 +41,8 @@ struct plot *plot_crealloc(SDL_Point position) {
   new_plot->background = tex;
   new_plot->fft.dx = 0.0f;
   new_plot->fft.x0 = 0.0f;
+  new_plot->fft.length = 0;
+  new_plot->fft.data = malloc(sizeof(float) * 1);
 
   SDL_FreeSurface(sur);
 
@@ -55,6 +57,8 @@ void plot_free(struct plot *plot) {
 
   SDL_DestroyTexture(plot->background);
   plot->background = NULL;
+
+  free(plot->fft.data);
 
   free(plot);
   plot = NULL;

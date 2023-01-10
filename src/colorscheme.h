@@ -13,11 +13,15 @@
 
 #define COLOR_PLOT_NAME COLOR_WHITE
 
-#define COLOR_CHANNEL_NUMBER                                                   \
+#define COLOR_CHANNEL_NUMBER_ON                                                \
   (SDL_Color) { 0x38, 0x38, 0x38, 0xFF }
+
+#define COLOR_CHANNEL_NUMBER_OFF                                               \
+  (SDL_Color) { 0x2C, 0x2C, 0x2C, 0xFF }
 
 #define COLOR_CHANNEL_HEAD                                                     \
   (SDL_Color) { 0x76, 0x76, 0x76, 0xFF }
 
 #define COLOR_PLOT_LINE                                                        \
   (SDL_Color) { 0x3B, 0x94, 0xE5, 0xFF }
+

@@ -5,6 +5,7 @@
 #include "global.h"
 #include "graphics.h"
 #include "parse.h"
+#include "plot.h"
 #include "text.h"
 
 #include <SDL2/SDL_assert.h>
@@ -21,29 +22,73 @@ static inline void draw_background(SDL_Color color) {
   SDL_RenderClear(renderer);
 }
 
-static inline void draw_plots(void) {
-  SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
-  for (size_t i = 0; i < g_plots_count; ++i) {
-    float const dx = g_graphics->plots[i]->fft.dx;
-    float const x0 = g_graphics->plots[i]->fft.x0;
-    float const start_x = g_graphics->plots[i]->position.x;
-    float const mid_y_plot = (float)g_graphics->plots[i]->position.y + x0 +
-                             (float)g_graphics->plots[i]->position.h / 2;
-    SDL_FPoint prev = {.x = start_x, .y = mid_y_plot};
+static inline void draw_red_line_plot(struct plot* plot) {
+  float const x0 = plot->fft.x0;
+  float const start_x = plot->position.x;
+  float const mid_y = (float)plot->position.y + x0 +
+    (float)plot->position.h / 2;
+
+  float const end_start_x = start_x + plot->position.w;
+  float const mid_dy = mid_y + 40;
+  SDL_SetRenderDrawColor(renderer, 0xDF, 0x40, 0x53, 0xFF);
+  SDL_RenderDrawLineF(renderer, start_x, mid_dy, end_start_x, mid_dy);
+}
+
+static inline void draw_plot_data(struct plot* plot) {
+    if(check_zero_array(plot->fft.data, plot->fft.length)) {
+      draw_red_line_plot(plot);
+      return;
+    }
+
+    float const dx = plot->fft.dx;
+    float const x0 = plot->fft.x0;
+    float const start_x = plot->position.x;
+    float const mid_y = (float)plot->position.y + x0 +
+                             (float)plot->position.h / 2;
+    SDL_FPoint prev = {.x = start_x, .y = mid_y};
     SDL_FPoint next = {.x = prev.x, .y = prev.y};
 
-    for (size_t j = 0; j < g_graphics->plots[i]->fft.length - 1; ++j) {
-      float const *fft = g_graphics->plots[i]->fft.data;
+    size_t const fft_length = plot->fft.length;
+    SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
+    for (size_t j = 0; j < fft_length; ++j) {
+      float const *fft = plot->fft.data;
 
-      next.y = fft[j] + mid_y_plot;
+      next.y = fft[j] + mid_y;
       SDL_RenderDrawLineF(renderer, prev.x, prev.y, next.x, next.y);
       next.x += dx;
       prev.x = next.x;
       prev.y = next.y;
     }
+}
+
+static inline void draw_plots(void) {
+  size_t idx = 0;
+  for(size_t i = 0; i < g_graphics->service_channel->channels_count; ++i) {
+    if(!g_graphics->service_channel->states[i]) {
+      draw_red_line_plot(g_graphics->plots[idx]);
+      draw_red_line_plot(g_graphics->plots[idx+1]);
+      idx += 2;
+    }
+    else {
+      draw_plot_data(g_graphics->plots[idx]);
+      draw_plot_data(g_graphics->plots[idx+1]);
+      idx += 2;
+    }
   }
 
-  g_graphics_ready = false;
+  for(size_t i = 0; i < g_graphics->relay_channel->channels_count; ++i) {
+    if(!g_graphics->relay_channel->states[i]) {
+      draw_red_line_plot(g_graphics->plots[idx]);
+      draw_red_line_plot(g_graphics->plots[idx+1]);
+      idx += 2;
+    }
+    else {
+      draw_plot_data(g_graphics->plots[idx]);
+      draw_plot_data(g_graphics->plots[idx+1]);
+      idx += 2;
+    }
+  }
+
 }
 
 inline void draw_fps(void) {
@@ -71,7 +116,7 @@ static inline void draw_plots_name(struct channel *channel) {
 }
 
 static inline void draw_channels_service(struct channels *channels) {
-  for (size_t i = 0; i < channels->count; ++i) {
+  for (size_t i = 0; i < channels->channels_count; ++i) {
 
     struct channel_service *schannel =
         (struct channel_service *)channels->channels[i];
@@ -87,7 +132,7 @@ static inline void draw_channels_service(struct channels *channels) {
 }
 
 static inline void draw_channels_relay(struct channels *channels) {
-  for (size_t i = 0; i < channels->count; ++i) {
+  for (size_t i = 0; i < channels->channels_count; ++i) {
 
     struct channel_relay *rchannel =
         (struct channel_relay *)channels->channels[i];
@@ -114,10 +159,8 @@ static inline void draw(void) {
   draw_channels_service(g_graphics->service_channel);
   draw_channels_relay(g_graphics->relay_channel);
   draw_line_channel_delim();
-  /* draw_fps(); */
-  if (g_graphics_ready) {
-    draw_plots();
-  }
+  draw_fps();
+  draw_plots();
   SDL_RenderPresent(renderer);
 }
 
