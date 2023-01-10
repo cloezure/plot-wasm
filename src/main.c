@@ -9,6 +9,9 @@
 #include "global.h"
 #include "graphics.h"
 
+#define VERSION 1.2+
+#define AUTHORS NOTIDMAN
+
 int main(void) {
   int32_t const w = 1308;
   int32_t const h = 734;
