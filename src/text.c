@@ -7,16 +7,27 @@
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
 
-static inline void text_info_update(struct text* text, char const* info) {
-  size_t const len = strlen(info) + 1;
-  text->info = malloc(sizeof(char) * len);
-  strncpy(text->info, info, len);
-  text->info[len] = '\0';
+static inline void text_info_update(struct text *text, char const *info);
+
+char const *text_get_font_type(enum TEXT_FONT_TYPE type) {
+  switch (type) {
+  case TEXT_FONT_REGULAR:
+    return "res/Gilroy-Regular.ttf";
+  case TEXT_FONT_BOLD:
+    return "res/Gilroy-Bold.ttf";
+  }
 }
 
+struct text {
+  TTF_Font *font;
+  SDL_Texture *texture;
+  char *info;
+  SDL_Color color;
+  SDL_Rect position;
+};
+
 struct text *text_build(char const *font_path, int32_t font_size,
-                           SDL_Color color, SDL_Rect position,
-                           char const *info) {
+                        SDL_Color color, SDL_Rect position, char const *info) {
   struct text *new_text = malloc(sizeof *new_text);
   new_text->font = TTF_OpenFont(font_path, font_size);
 
@@ -112,4 +123,11 @@ void text_change_color(struct text *text, SDL_Color color) {
   }
 
   SDL_FreeSurface(sur);
+}
+
+static inline void text_info_update(struct text *text, char const *info) {
+  size_t const len = strlen(info) + 1;
+  text->info = malloc(sizeof(char) * len);
+  strncpy(text->info, info, len);
+  text->info[len] = '\0';
 }

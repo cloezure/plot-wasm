@@ -1,30 +1,31 @@
 #include "plot.h"
+#include "colorscheme.h"
 #include "common_function.h"
 #include "global.h"
-#include <SDL2/SDL_pixels.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_stdinc.h>
-#include <SDL2/SDL_surface.h>
+#include "text.h"
 
-struct plot *plot_build(SDL_Point position) {
+char const plot_background_png[] = "res/plot_back.png";
 
-#if BMP_BACKGROUND_FOR_PLOT
-  SDL_Surface *sur = SDL_LoadBMP("res/plot_back.bmp");
-  if (sur == NULL) {
-    display_error_sdl("Can't load plot_back.bmp");
-    return NULL;
-  }
+struct plot {
+  SDL_Rect position;
+  SDL_Texture *background;
+  struct text *name;
 
-  uint32_t color_key = SDL_MapRGB(sur->format, 0xFF, 0xFF, 0xFF);
-  SDL_SetColorKey(sur, SDL_TRUE, color_key);
+  struct fft {
+    float *data;
+    size_t length;
+    float dx;
+    float x0;
+  } fft;
+};
 
-#else
-  SDL_Surface *sur = IMG_Load(PLOT_BACKGROUND_PNG);
+struct plot *plot_build(SDL_Point position, char const *name) {
+
+  SDL_Surface *sur = IMG_Load(plot_background_png);
   if (sur == NULL) {
     display_error_img("Can't load plot_back.png");
     return NULL;
   }
-#endif
 
   SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, sur);
   if (tex == NULL) {
@@ -44,6 +45,11 @@ struct plot *plot_build(SDL_Point position) {
   new_plot->fft.length = 0;
   new_plot->fft.data = malloc(sizeof(float) * 1);
 
+  int32_t const plot_size_name = 20;
+  SDL_Rect pos_name = {.x = position.x + 9, .y = position.y - 11};
+  new_plot->name = text_build(text_get_font_type(TEXT_FONT_BOLD),
+                              plot_size_name, COLOR_PLOT_NAME, pos_name, name);
+
   SDL_FreeSurface(sur);
 
   return new_plot;
@@ -59,7 +65,34 @@ void plot_free(struct plot *plot) {
   plot->background = NULL;
 
   free(plot->fft.data);
+  text_free(plot->name);
 
   free(plot);
   plot = NULL;
+}
+
+int plot_get_pos_w(struct plot *plot) { return plot->position.w; }
+
+int plot_get_pos_h(struct plot *plot) { return plot->position.h; }
+
+int plot_get_pos_x(struct plot *plot) { return plot->position.x; }
+
+int plot_get_pos_y(struct plot *plot) { return plot->position.y; }
+
+struct text const *plot_get_name(struct plot *plot) {
+  return plot->name;
+}
+
+void plot_fft_update(struct plot *plot, float *data, int length, float dx,
+                     float x0) {
+  free(plot->fft.data);
+  plot->fft.data = malloc(sizeof *data * length);
+
+  for (size_t i = 0; i < length; ++i) {
+    plot->fft.data[length - 1 - i] = data[i];
+  }
+
+  plot->fft.length = length;
+  plot->fft.dx = dx;
+  plot->fft.x0 = x0;
 }
