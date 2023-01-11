@@ -19,19 +19,19 @@ void set_fps(int fps) { g_graphics->fps = fps; }
 
 static inline size_t index_plot_switch(size_t idx) {
   switch (idx) {
-    case 0:  return 1;
-    case 1:  return 3;
-    case 2:  return 5;
-    case 3:  return 7;
-    case 4:  return 0;
-    case 5:  return 2;
-    case 6:  return 4;
-    case 7:  return 6;
-    case 8:  return 8;
-    case 9:  return 9;
-    case 10: return 10;
-    case 11: return 11;
-    default: return 0;
+  case 0:  return 1;
+  case 1:  return 3;
+  case 2:  return 5;
+  case 3:  return 7;
+  case 4:  return 0;
+  case 5:  return 2;
+  case 6:  return 4;
+  case 7:  return 6;
+  case 8:  return 9;
+  case 9:  return 8;
+  case 10: return 11;
+  case 11: return 10;
+  default: return 0;
   }
 }
 
@@ -122,9 +122,9 @@ void on_channel(int channel_idx) {
   /* } */
 }
 
-static inline void graphics_plots_crealloc(struct graphics *graphics);
+static inline void graphics_plots_build(struct graphics *graphics);
 
-struct graphics *graphics_crealloc(int32_t width, int32_t height, int32_t fps) {
+struct graphics *graphics_build(int32_t width, int32_t height, int32_t fps) {
   struct graphics *new_graphics = malloc(sizeof *new_graphics);
   assert(new_graphics);
   new_graphics->width = width;
@@ -139,7 +139,7 @@ struct graphics *graphics_crealloc(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-#define _win_and_ren_ 1
+#define WIN_AND_REN 1
 
 #if _win_and_ren_
   SDL_CreateWindowAndRenderer(new_graphics->width, new_graphics->height, 0,
@@ -155,7 +155,7 @@ struct graphics *graphics_crealloc(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-#if !_win_and_ren_
+#if !WIN_AND_REN
   renderer = SDL_CreateRenderer(
       window, -1, 0 SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 #endif
@@ -181,16 +181,16 @@ struct graphics *graphics_crealloc(int32_t width, int32_t height, int32_t fps) {
   }
 
   new_graphics->service_channel =
-      channels_service_crealloc(4, (SDL_Point){.x = 0, .y = 0});
+      channels_service_build(4, (SDL_Point){.x = 0, .y = 0});
   new_graphics->relay_channel =
-      channels_relay_crealloc(2, (SDL_Point){.x = 0, .y = 244 * 2});
+      channels_relay_build(2, (SDL_Point){.x = 0, .y = 244 * 2});
 
-  graphics_plots_crealloc(new_graphics);
+  graphics_plots_build(new_graphics);
 
   return new_graphics;
 }
 
-static inline void graphics_plots_crealloc(struct graphics *graphics) {
+static inline void graphics_plots_build(struct graphics *graphics) {
   graphics->plots = malloc(sizeof(struct plot *) * g_plots_count);
 
   size_t plot_i = 0;

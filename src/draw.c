@@ -96,7 +96,7 @@ inline void draw_fps(void) {
   char buff[100] = {0};
   sprintf(buff, "%d", g_graphics->fps);
 
-  struct text *fps = text_crealloc(TEXT_FONT_BOLD, 60, COLOR_GREEN, pos, buff);
+  struct text *fps = text_build(TEXT_FONT_BOLD, 60, COLOR_GREEN, pos, buff);
   fps->position.x = g_graphics->width - fps->position.w - 10;
 
   DRAW_IN_REN(fps->texture, &fps->position);

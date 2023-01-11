@@ -24,30 +24,30 @@ static inline char const *get_relay_num(size_t num) {
   }
 }
 
-static inline void channel_crealloc(struct channel *channel, SDL_Point position,
+static inline void channel_build(struct channel *channel, SDL_Point position,
                                     char const *plot0_name,
                                     char const *plot1_name, SDL_Rect pos_num) {
   channel->position = position;
   // plots
   SDL_Point pos_plot0_body = {.x = 69 + 48 + pos_num.x, .y = pos_num.y - 25};
-  channel->plot0 = plot_crealloc(pos_plot0_body);
+  channel->plot0 = plot_build(pos_plot0_body);
 
   SDL_Point pos_plot1_body = {.x = pos_plot0_body.x +
                                    channel->plot0->position.w + 73,
                               .y = pos_num.y - 25};
-  channel->plot1 = plot_crealloc(pos_plot1_body);
+  channel->plot1 = plot_build(pos_plot1_body);
 
   int32_t const plot_size_name = 20;
   SDL_Rect pos_plot0_name = {.x = pos_plot0_body.x + 9,
                              .y = pos_plot0_body.y - 11};
   channel->plot0_name =
-      text_crealloc(TEXT_FONT_BOLD, plot_size_name, COLOR_PLOT_NAME,
+      text_build(TEXT_FONT_BOLD, plot_size_name, COLOR_PLOT_NAME,
                     pos_plot0_name, plot0_name);
 
   SDL_Rect pos_plot1_name = {.x = pos_plot0_name.x + 280,
                              .y = pos_plot0_name.y};
   channel->plot1_name =
-      text_crealloc(TEXT_FONT_BOLD, plot_size_name, COLOR_PLOT_NAME,
+      text_build(TEXT_FONT_BOLD, plot_size_name, COLOR_PLOT_NAME,
                     pos_plot1_name, plot1_name);
   channel->state = true;
 }
@@ -63,7 +63,7 @@ static inline void channel_free(struct channel *channel) {
   channel = NULL;
 }
 
-struct channel *channel_service_crealloc(SDL_Point position,
+struct channel *channel_service_build(SDL_Point position,
                                          int32_t channel_number,
                                          char const *plot0_name,
                                          char const *plot1_name) {
@@ -71,14 +71,14 @@ struct channel *channel_service_crealloc(SDL_Point position,
   new_channel->channel = malloc(sizeof *new_channel->channel);
 
   SDL_Rect pos_num = {.x = position.x + 26, .y = position.y + 67};
-  channel_crealloc(new_channel->channel, position, plot0_name, plot1_name,
+  channel_build(new_channel->channel, position, plot0_name, plot1_name,
                    pos_num);
 
   char channel_number_s[10] = {'\0'};
   sprintf(channel_number_s, "%d", channel_number);
 
   // body
-  new_channel->channel_number = text_crealloc(
+  new_channel->channel_number = text_build(
       TEXT_FONT_BOLD, 150, COLOR_CHANNEL_NUMBER_ON, pos_num, channel_number_s);
 
   return (struct channel *)new_channel;
@@ -97,7 +97,7 @@ void channel_service_free(struct channel *channel) {
   channel = NULL;
 }
 
-struct channels *channels_service_crealloc(size_t count, SDL_Point position) {
+struct channels *channels_service_build(size_t count, SDL_Point position) {
   struct channels *channels = malloc(sizeof *channels);
   channels->channels_count = count;
   channels->channels = malloc(sizeof(struct channels *) * count);
@@ -106,7 +106,7 @@ struct channels *channels_service_crealloc(size_t count, SDL_Point position) {
   SDL_Point dpos = position;
 
   for (size_t i = 0; i < count; ++i) {
-    channels->channels[i] = channel_service_crealloc(dpos, i + 1, "Tx", "Rx");
+    channels->channels[i] = channel_service_build(dpos, i + 1, "Tx", "Rx");
     channels->states[i] = ((struct channel_service*)channels->channels[i])->channel->state;
 
     if (!is_even(i)) {
@@ -140,7 +140,7 @@ void channels_service_free(struct channels *channels) {
   channels = NULL;
 }
 
-struct channel *channel_relay_crealloc(SDL_Point position,
+struct channel *channel_relay_build(SDL_Point position,
                                        int32_t channel_number,
                                        char const *plot0_name,
                                        char const *plot1_name) {
@@ -151,7 +151,7 @@ struct channel *channel_relay_crealloc(SDL_Point position,
 
   // body
   SDL_Rect pos_num = {.x = position.x + 26, .y = position.y + 67};
-  channel_crealloc(new_channel->channel, position, plot0_name, plot1_name,
+  channel_build(new_channel->channel, position, plot0_name, plot1_name,
                    pos_num);
 
   SDL_Surface *sur_num = IMG_Load(get_relay_num(channel_number));
@@ -187,7 +187,7 @@ void channel_relay_free(struct channel *channel) {
   channel = NULL;
 }
 
-struct channels *channels_relay_crealloc(size_t count, SDL_Point position) {
+struct channels *channels_relay_build(size_t count, SDL_Point position) {
   struct channels *channels = malloc(sizeof *channels);
   channels->channels_count = count;
   channels->channels = malloc(sizeof(struct channel *) * count);
@@ -196,7 +196,7 @@ struct channels *channels_relay_crealloc(size_t count, SDL_Point position) {
   SDL_Point dpos = position;
 
   for (size_t i = 0; i < count; ++i) {
-    channels->channels[i] = channel_relay_crealloc(dpos, i, "Tx", "Rx");
+    channels->channels[i] = channel_relay_build(dpos, i, "Tx", "Rx");
     channels->states[i] = ((struct channel_relay*)channels->channels[i])->channel->state;
 
     if (!is_even(i)) {

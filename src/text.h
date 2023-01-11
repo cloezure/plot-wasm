@@ -15,7 +15,7 @@ struct text {
   SDL_Rect position;
 };
 
-struct text *text_crealloc(char const *font_path, int32_t font_size,
+struct text *text_build(char const *font_path, int32_t font_size,
                            SDL_Color color, SDL_Rect position,
                            char const *info);
 void text_free(struct text *text);

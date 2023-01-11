@@ -14,7 +14,7 @@ static inline void text_info_update(struct text* text, char const* info) {
   text->info[len] = '\0';
 }
 
-struct text *text_crealloc(char const *font_path, int32_t font_size,
+struct text *text_build(char const *font_path, int32_t font_size,
                            SDL_Color color, SDL_Rect position,
                            char const *info) {
   struct text *new_text = malloc(sizeof *new_text);
