@@ -183,6 +183,7 @@ void handle_events(void) {
     exit(EXIT_SUCCESS);
     break;
   }
+  /* case */
   }
   draw();
 
