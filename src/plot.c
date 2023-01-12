@@ -6,19 +6,6 @@
 
 char const plot_background_png[] = "res/plot_back.png";
 
-struct plot {
-  SDL_Rect position;
-  SDL_Texture *background;
-  struct text *name;
-
-  struct fft {
-    float *data;
-    size_t length;
-    float dx;
-    float x0;
-  } fft;
-};
-
 struct plot *plot_build(SDL_Point position, char const *name) {
 
   SDL_Surface *sur = IMG_Load(plot_background_png);
@@ -71,24 +58,12 @@ void plot_free(struct plot *plot) {
   plot = NULL;
 }
 
-int plot_get_pos_w(struct plot *plot) { return plot->position.w; }
-
-int plot_get_pos_h(struct plot *plot) { return plot->position.h; }
-
-int plot_get_pos_x(struct plot *plot) { return plot->position.x; }
-
-int plot_get_pos_y(struct plot *plot) { return plot->position.y; }
-
-struct text const *plot_get_name(struct plot *plot) {
-  return plot->name;
-}
-
 void plot_fft_update(struct plot *plot, float *data, int length, float dx,
                      float x0) {
   free(plot->fft.data);
   plot->fft.data = malloc(sizeof *data * length);
 
-  for (size_t i = 0; i < length; ++i) {
+  for (int i = 0; i < length; ++i) {
     plot->fft.data[length - 1 - i] = data[i];
   }
 

@@ -1,5 +1,8 @@
 #include "graphics.h"
 #include "channel.h"
+#include "channels.h"
+#include "channel_relay.h"
+#include "channel_service.h"
 #include "colorscheme.h"
 #include "common_function.h"
 #include "global.h"
@@ -69,6 +72,16 @@ char *logger(void) {
   return buffer_logger;
 }
 
+static inline void off_channel_relay(int channel_idx) {
+    struct channels* channels = g_graphics->relay_channel;
+
+    if (channels->states[channel_idx] == false) return;
+    channels->states[channel_idx] = false;
+
+    struct channel_relay* rel = (struct channel_relay*)channels->channels[channel_idx];
+    channel_relay_switch_number(rel);
+}
+
 static inline void off_channel_service(int channel_idx) {
   struct channels *channels = g_graphics->service_channel;
 
@@ -88,34 +101,12 @@ void off_channel(int channel_idx) {
   if (channel_idx < 0 || channel_idx >= (int)g_plots_count / 2)
     return;
 
-  size_t const serv_count = g_graphics->service_channel->channels_count - 1;
+  int const serv_count = g_graphics->service_channel->channels_count - 1;
   if (channel_idx <= serv_count) {
     off_channel_service(channel_idx);
   } else {
-    off_channel_relay(g_graphics->relay_channel, channel_idx - 4);
+    off_channel_relay(channel_idx - 4);
   }
-}
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-void on_channel(int channel_idx) {
-  if (channel_idx < 0 || channel_idx > (int)g_plots_count)
-    return;
-
-  /* if(g_graphics->plots[plot_idx]->state == true) return; */
-  /* g_graphics->plots[plot_idx]->state = true; */
-
-  /* if(plot_idx <= g_graphics->service_channel->count) { */
-  /*   text_change_color(((struct
-   * channel_service*)g_graphics->service_channel->channels[plot_idx])->channel_number,
-   */
-  /*                     COLOR_CHANNEL_NUMBER_ON); */
-  /* } */
-  /* else { */
-  /*   channel_relay_switch_number(((struct
-   * channel_relay*)g_graphics->relay_channel->channels[plot_idx])); */
-  /* } */
 }
 
 static inline void graphics_plots_build(struct graphics *graphics);
@@ -135,7 +126,7 @@ struct graphics *graphics_build(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-#define WIN_AND_REN 1
+#define WIN_AND_REN 0
 
 #if _win_and_ren_
   SDL_CreateWindowAndRenderer(new_graphics->width, new_graphics->height, 0,
@@ -153,7 +144,7 @@ struct graphics *graphics_build(int32_t width, int32_t height, int32_t fps) {
 
 #if !WIN_AND_REN
   renderer = SDL_CreateRenderer(
-      window, -1, 0 SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+      window, -1, 0 /* SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC */);
 #endif
 
   if (renderer == NULL) {

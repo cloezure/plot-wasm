@@ -3,12 +3,7 @@
 #include "colorscheme.h"
 #include "text.h"
 
-struct channel_service {
-  struct channel *channel;
-  struct text *channel_number;
-};
-
-struct channel_service *channel_service_build(SDL_Point position,
+struct channel* channel_service_build(SDL_Point position,
                                               int32_t channel_number,
                                               char const *plot0_name,
                                               char const *plot1_name) {
@@ -27,7 +22,7 @@ struct channel_service *channel_service_build(SDL_Point position,
       text_build(text_get_font_type(TEXT_FONT_BOLD), 150,
                  COLOR_CHANNEL_NUMBER_ON, pos_num, channel_number_s);
 
-  return new_channel;
+  return (struct channel*)new_channel;
 }
 
 void channel_service_free(struct channel_service *channel) {

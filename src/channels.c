@@ -3,13 +3,6 @@
 #include "channel_relay.h"
 #include "channel_service.h"
 #include "common_function.h"
-#include <stdbool.h>
-
-struct channels {
-  struct channel **channels;
-  size_t channels_count;
-  bool *states;
-};
 
 struct channels *channels_service_build(size_t count, SDL_Point position) {
   struct channels *channels = malloc(sizeof *channels);
@@ -20,9 +13,8 @@ struct channels *channels_service_build(size_t count, SDL_Point position) {
   SDL_Point dpos = position;
 
   for (size_t i = 0; i < count; ++i) {
-    channels->channels[i] =
-        (struct channel *)channel_service_build(dpos, i + 1, "Tx", "Rx");
-    channels->states[i] = channel_get_state(channels->channels[i]);
+    channels->channels[i] = channel_service_build(dpos, i + 1, "Tx", "Rx");
+    channels->states[i] = ((struct channel_service*)channels->channels[i])->channel->state;
 
     if (!is_even(i)) {
       dpos.y += 244;
@@ -64,9 +56,8 @@ struct channels *channels_relay_build(size_t count, SDL_Point position) {
   SDL_Point dpos = position;
 
   for (size_t i = 0; i < count; ++i) {
-    channels->channels[i] =
-        (struct channel_relay *)channel_relay_build(dpos, i, "Tx", "Rx");
-    channels->states[i] = channel_get_state(channels->channels[i]);
+    channels->channels[i] = channel_relay_build(dpos, i, "Tx", "Rx");
+    channels->states[i] = ((struct channel_relay*)channels->channels[i])->channel->state;
 
     if (!is_even(i)) {
       dpos.y += 244;

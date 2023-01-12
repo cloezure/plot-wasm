@@ -11,14 +11,7 @@ char const relay_number_2_on[] = "res/rim_2_on.png";
 
 static inline char const *get_relay_num(size_t num);
 
-struct channel_relay {
-  struct channel *channel;
-  SDL_Texture *channel_number;
-  SDL_Rect channel_number_pos;
-  int32_t channel_number_count;
-};
-
-struct channel_relay *channel_relay_build(SDL_Point position,
+struct channel* channel_relay_build(SDL_Point position,
                                           int32_t channel_number,
                                           char const *plot0_name,
                                           char const *plot1_name) {
@@ -48,7 +41,7 @@ struct channel_relay *channel_relay_build(SDL_Point position,
 
   SDL_FreeSurface(sur_num);
 
-  return new_channel;
+  return (struct channel*)new_channel;
 }
 
 void channel_relay_free(struct channel_relay *channel) {
@@ -116,15 +109,4 @@ static inline char const *get_relay_num(size_t num) {
   default:
     return "";
   }
-}
-
-void channel_relay_off_channel(struct channel_relay *channel, int channel_idx) {
-
-  if (channels->states[channel_idx] == false)
-    return;
-  channels->states[channel_idx] = false;
-
-  struct channel_relay *rel =
-      (struct channel_relay *)channels->channels[channel_idx];
-  channel_relay_switch_number(rel);
 }

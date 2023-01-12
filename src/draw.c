@@ -1,5 +1,8 @@
 #include "draw.h"
 #include "channel.h"
+#include "channels.h"
+#include "channel_service.h"
+#include "channel_relay.h"
 #include "colorscheme.h"
 #include "common_function.h"
 #include "global.h"
@@ -96,7 +99,7 @@ inline void draw_fps(void) {
   char buff[100] = {0};
   sprintf(buff, "%d", g_graphics->fps);
 
-  struct text *fps = text_build(TEXT_FONT_BOLD, 60, COLOR_GREEN, pos, buff);
+  struct text *fps = text_build(text_get_font_type(TEXT_FONT_BOLD), 60, COLOR_GREEN, pos, buff);
   fps->position.x = g_graphics->width - fps->position.w - 10;
 
   DRAW_IN_REN(fps->texture, &fps->position);
@@ -111,8 +114,8 @@ static inline void draw_plots_background(struct channel *channel) {
 }
 
 static inline void draw_plots_name(struct channel *channel) {
-  DRAW_IN_REN(channel->plot0_name->texture, &channel->plot0_name->position);
-  DRAW_IN_REN(channel->plot1_name->texture, &channel->plot1_name->position);
+  DRAW_IN_REN(channel->plot0->name->texture, &channel->plot0->name->position);
+  DRAW_IN_REN(channel->plot1->name->texture, &channel->plot1->name->position);
 }
 
 static inline void draw_channels_service(struct channels *channels) {

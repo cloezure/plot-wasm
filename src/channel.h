@@ -2,12 +2,13 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
-struct channel;
+struct channel {
+  SDL_Point position;
+  struct plot *plot0;
+  struct plot *plot1;
+  bool state;
+};
 
-SDL_Point channel_get_position(struct channel *channel);
-struct plot *channel_get_plot0(struct channel *channel);
-struct plot *channel_get_plot1(struct channel *channel);
-bool channel_get_state(struct channel *channel);
 
 struct channel *channel_alloc(void);
 void channel_build(struct channel *channel, SDL_Point position,

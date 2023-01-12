@@ -32,11 +32,6 @@ EMSCRIPTEN_KEEPALIVE
 #endif
 void off_channel(int channel_idx);
 
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-void on_channel(int channel_idx);
-
 struct graphics {
   int32_t width;
   int32_t height;
