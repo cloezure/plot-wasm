@@ -7,5 +7,5 @@ struct coord_info {
     struct text* coords;
 };
 
-struct coord_info* coord_info_build(void);
+struct coord_info* coord_info_build(SDL_Rect pos, float x, float y);
 void coord_info_free(struct coord_info* coord_info);

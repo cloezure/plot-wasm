@@ -12,7 +12,9 @@
 #include "text.h"
 
 #include <SDL2/SDL_assert.h>
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_hints.h>
+#include <SDL2/SDL_keyboard.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
@@ -167,6 +169,10 @@ static inline void draw(void) {
   SDL_RenderPresent(renderer);
 }
 
+static inline void draw_coord_info(void) {
+
+}
+
 void handle_events(void) {
   int32_t const frame_delay = 1000 / g_graphics->fps;
   uint32_t frame_start;
@@ -175,16 +181,24 @@ void handle_events(void) {
   frame_start = SDL_GetTicks();
 
   SDL_Event event;
-  SDL_PollEvent(&event);
+  while(SDL_PollEvent(&event)) {
 
-  switch (event.type) {
-  case SDL_QUIT: {
-    graphics_free(g_graphics);
-    exit(EXIT_SUCCESS);
-    break;
+    switch (event.type) {
+    case SDL_QUIT: {
+        graphics_free(g_graphics);
+        exit(EXIT_SUCCESS);
+        break;
+    }
+    case SDL_MOUSEMOTION: {
+        SDL_Point mouse = { 0, 0};
+        SDL_GetMouseState(&mouse.x, &mouse.y);
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
+        SDL_RenderDrawLineF(renderer, g_graphics->width_mid, g_graphics->height_mid, mouse.x, mouse.y);
+        break;
+      }
+    }
   }
-  /* case */
-  }
+
   draw();
 
   frame_time = SDL_GetTicks() - frame_start;
