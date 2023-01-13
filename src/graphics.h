@@ -1,5 +1,6 @@
 #pragma once
 #include "channel.h"
+#include "coord_info.h"
 #include <SDL2/SDL.h>
 #include <stdint.h>
 
@@ -33,12 +34,12 @@ EMSCRIPTEN_KEEPALIVE
 void off_channel(int channel_idx);
 
 struct graphics {
-  int32_t width;
-  int32_t height;
+  SDL_Rect pos;
   int32_t width_mid;
   int32_t height_mid;
   int32_t fps;
   struct plot **plots;
+  struct coord_info_vec* coord_dots;
 
   struct channels *service_channel;
   struct channels *relay_channel;

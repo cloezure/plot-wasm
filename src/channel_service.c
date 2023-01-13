@@ -20,7 +20,7 @@ struct channel* channel_service_build(SDL_Point position,
   // body
   new_channel->channel_number =
       text_build(text_get_font_type(TEXT_FONT_BOLD), 150,
-                 COLOR_CHANNEL_NUMBER_ON, pos_num, channel_number_s);
+                 COLOR_CHANNEL_NUMBER_ON, (SDL_Point) { .x = pos_num.x, .y = pos_num.y }, channel_number_s);
 
   return (struct channel*)new_channel;
 }

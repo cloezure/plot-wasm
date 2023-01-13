@@ -30,7 +30,6 @@ override CFLAGS += -std=c11\
 				-sUSE_SDL=2\
 				-sSINGLE_FILE=1\
 				-sMODULARIZE=1\
-				-sASSERTIONS=1\
 				-sALLOW_MEMORY_GROWTH\
 				-sEXPORT_NAME="GraphicsPlot"\
 				--preload-file ./res

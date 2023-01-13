@@ -9,7 +9,7 @@
 #include "global.h"
 #include "graphics.h"
 
-#define VERSION 1.3.1+
+#define VERSION 1.4+
 #define AUTHORS NOTIDMAN
 
 int main(void) {

@@ -2,7 +2,7 @@
 #include "colorscheme.h"
 #include "text.h"
 
-struct coord_info* coord_info_build(SDL_Rect pos, float x, float y) {
+struct coord_info* coord_info_build(SDL_Point pos, float x, float y) {
   struct coord_info* info = malloc(sizeof *info);
   info->pos = pos;
 

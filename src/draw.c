@@ -29,14 +29,15 @@ static inline void draw_background(SDL_Color color) {
 
 static inline void draw_red_line_plot(struct plot* plot) {
   float const x0 = plot->fft.x0;
-  float const start_x = plot->position.x;
-  float const mid_y = (float)plot->position.y + x0 +
-    (float)plot->position.h / 2;
+  float const start_x = 0;
+  float const mid_y = x0 + (float)plot->position.h / 2;
 
   float const end_start_x = start_x + plot->position.w;
   float const mid_dy = mid_y + 40;
   SDL_SetRenderDrawColor(renderer, 0xDF, 0x40, 0x53, 0xFF);
+  SDL_RenderSetViewport(renderer, &plot->position);
   SDL_RenderDrawLineF(renderer, start_x, mid_dy, end_start_x, mid_dy);
+  SDL_RenderSetViewport(renderer, &g_graphics->pos);
 }
 
 static inline void draw_plot_data(struct plot* plot) {
@@ -47,23 +48,27 @@ static inline void draw_plot_data(struct plot* plot) {
 
     float const dx = plot->fft.dx;
     float const x0 = plot->fft.x0;
-    float const start_x = plot->position.x;
-    float const mid_y = (float)plot->position.y + x0 +
-                             (float)plot->position.h / 2;
+    /* float const start_x = plot->position.x; */
+    float const start_x = 0;
+    /* float const mid_y = (float)plot->position.y + x0 + */
+    /*                          (float)plot->position.h / 2; */
+    float const mid_y = x0 + (float)plot->position.h / 2;
     SDL_FPoint prev = {.x = start_x, .y = mid_y};
     SDL_FPoint next = {.x = prev.x, .y = prev.y};
 
     size_t const fft_length = plot->fft.length;
+    SDL_RenderSetViewport(renderer, &plot->position);
     SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
     for (size_t j = 0; j < fft_length; ++j) {
       float const *fft = plot->fft.data;
 
-      next.y = fft[j] + mid_y;
+      next.y = fft[j] + mid_y + plot->scale;
       SDL_RenderDrawLineF(renderer, prev.x, prev.y, next.x, next.y);
       next.x += dx;
       prev.x = next.x;
       prev.y = next.y;
     }
+    SDL_RenderSetViewport(renderer, &g_graphics->pos);
 }
 
 static inline void draw_plots(void) {
@@ -93,16 +98,15 @@ static inline void draw_plots(void) {
       idx += 2;
     }
   }
-
 }
 
 inline void draw_fps(void) {
-  SDL_Rect pos = {.y = 10};
+  SDL_Point pos = {.y = 10};
   char buff[100] = {0};
   sprintf(buff, "%d", g_graphics->fps);
 
   struct text *fps = text_build(text_get_font_type(TEXT_FONT_BOLD), 60, COLOR_GREEN, pos, buff);
-  fps->position.x = g_graphics->width - fps->position.w - 10;
+  fps->position.x = g_graphics->pos.w - fps->position.w - 10;
 
   DRAW_IN_REN(fps->texture, &fps->position);
   text_free(fps);
@@ -154,9 +158,13 @@ static inline void draw_channels_relay(struct channels *channels) {
 }
 
 static inline void draw_line_channel_delim(void) {
-  SDL_Rect rec = {.x = 0, .y = 244 * 2, .h = 2, .w = g_graphics->width};
+  SDL_Rect rec = {.x = 0, .y = 244 * 2, .h = 2, .w = g_graphics->pos.w};
   SDL_SetRenderDrawColor(renderer, 0x1A, 0x1A, 0x1A, 0xFF);
   SDL_RenderDrawRect(renderer, &rec);
+}
+
+static inline void draw_coord_info(struct plot* plot) {
+  /* if(mouse.x  plot->position.x) */
 }
 
 static inline void draw(void) {
@@ -169,11 +177,10 @@ static inline void draw(void) {
   SDL_RenderPresent(renderer);
 }
 
-static inline void draw_coord_info(void) {
-
-}
-
 void handle_events(void) {
+#ifdef __EMSCRIPTEN__
+  emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+#endif
   int32_t const frame_delay = 1000 / g_graphics->fps;
   uint32_t frame_start;
   int32_t frame_time;
@@ -182,20 +189,12 @@ void handle_events(void) {
 
   SDL_Event event;
   while(SDL_PollEvent(&event)) {
-
-    switch (event.type) {
-    case SDL_QUIT: {
+    if(event.type == SDL_QUIT) {
         graphics_free(g_graphics);
         exit(EXIT_SUCCESS);
-        break;
     }
-    case SDL_MOUSEMOTION: {
-        SDL_Point mouse = { 0, 0};
+    else if(event.type == SDL_MOUSEMOTION) {
         SDL_GetMouseState(&mouse.x, &mouse.y);
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
-        SDL_RenderDrawLineF(renderer, g_graphics->width_mid, g_graphics->height_mid, mouse.x, mouse.y);
-        break;
-      }
     }
   }
 

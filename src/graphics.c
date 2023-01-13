@@ -5,6 +5,7 @@
 #include "channel_service.h"
 #include "colorscheme.h"
 #include "common_function.h"
+#include "coord_info.h"
 #include "global.h"
 #include "parse.h"
 #include "plot.h"
@@ -60,7 +61,8 @@ void trans_plot_data(int plot_idx, float *data, int length, float dx,
     return;
 
   plot_idx = index_plot_switch(plot_idx);
-  plot_fft_update(g_graphics->plots[plot_idx], data, length, dx, x0);
+  plot_fft_update(g_graphics->plots[plot_idx], data, length, dx / (100000000 - 25000000), x0 / 10000);
+
 }
 
 #ifdef __EMSCRIPTEN__
@@ -114,8 +116,7 @@ static inline void graphics_plots_build(struct graphics *graphics);
 struct graphics *graphics_build(int32_t width, int32_t height, int32_t fps) {
   struct graphics *new_graphics = malloc(sizeof *new_graphics);
   assert(new_graphics);
-  new_graphics->width = width;
-  new_graphics->height = height;
+  new_graphics->pos = (SDL_Rect) {.x = 0, .y = 0, .w = width, .h = height };
   new_graphics->width_mid = width / 2;
   new_graphics->height_mid = height / 2;
   new_graphics->fps = fps;
@@ -126,26 +127,17 @@ struct graphics *graphics_build(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-#define WIN_AND_REN 0
-
-#if _win_and_ren_
-  SDL_CreateWindowAndRenderer(new_graphics->width, new_graphics->height, 0,
-                              &window, &renderer);
-#else
   window = SDL_CreateWindow("Odas", SDL_WINDOWPOS_UNDEFINED,
-                            SDL_WINDOWPOS_UNDEFINED, new_graphics->width,
-                            new_graphics->height, SDL_WINDOW_SHOWN);
-#endif
+                            SDL_WINDOWPOS_UNDEFINED, new_graphics->pos.w,
+                            new_graphics->pos.h, SDL_WINDOW_SHOWN);
 
   if (window == NULL) {
     display_error_sdl("window could not be created");
     return NULL;
   }
 
-#if !WIN_AND_REN
   renderer = SDL_CreateRenderer(
-      window, -1, 0 /* SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC */);
-#endif
+      window, -1, SDL_RENDERER_PRESENTVSYNC);
 
   if (renderer == NULL) {
     display_error_sdl("renderer could not be created");
@@ -173,6 +165,8 @@ struct graphics *graphics_build(int32_t width, int32_t height, int32_t fps) {
       channels_relay_build(2, (SDL_Point){.x = 0, .y = 244 * 2});
 
   graphics_plots_build(new_graphics);
+
+  new_graphics->coord_dots = NULL;
 
   return new_graphics;
 }

@@ -19,7 +19,7 @@ char const *text_get_font_type(enum TEXT_FONT_TYPE type) {
 }
 
 struct text *text_build(char const *font_path, int32_t font_size,
-                        SDL_Color color, SDL_Rect position, char const *info) {
+                        SDL_Color color, SDL_Point position, char const *info) {
   struct text *new_text = malloc(sizeof *new_text);
   new_text->font = TTF_OpenFont(font_path, font_size);
 

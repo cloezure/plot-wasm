@@ -30,10 +30,11 @@ struct plot *plot_build(SDL_Point position, char const *name) {
   new_plot->fft.dx = 0.0f;
   new_plot->fft.x0 = 0.0f;
   new_plot->fft.length = 0;
+  new_plot->scale = 1;
   new_plot->fft.data = malloc(sizeof(float) * 1);
 
   int32_t const plot_size_name = 20;
-  SDL_Rect pos_name = {.x = position.x + 9, .y = position.y - 11};
+  SDL_Point pos_name = {.x = position.x + 9, .y = position.y - 11};
   new_plot->name = text_build(text_get_font_type(TEXT_FONT_BOLD),
                               plot_size_name, COLOR_PLOT_NAME, pos_name, name);
 
