@@ -18,7 +18,7 @@ ifeq ($(MODE), $(WEB))
 # build in
 	BUILD_IN := mjs
 
-override CFLAGS += -std=c11\
+override CFLAGS += -std=c17\
 				-O2\
 				-sUSE_SDL_TTF=2\
 				-sNO_EXIT_RUNTIME=1\
