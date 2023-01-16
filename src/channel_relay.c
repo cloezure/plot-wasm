@@ -11,18 +11,15 @@ char const relay_number_2_on[] = "res/rim_2_on.png";
 
 static inline char const *get_relay_num(size_t num);
 
-struct channel* channel_relay_build(SDL_Point position,
-                                          int32_t channel_number,
-                                          char const *plot0_name,
-                                          char const *plot1_name) {
+struct channel *channel_relay_cons(SDL_Point position, int32_t channel_number,
+                                   char const *plot0_name,
+                                   char const *plot1_name) {
   struct channel_relay *new_channel = malloc(sizeof *new_channel);
-  new_channel->channel = channel_alloc();
-  new_channel->channel_number_count = channel_number;
 
   // body
   SDL_Rect pos_num = {.x = position.x + 26, .y = position.y + 67};
-  channel_build(new_channel->channel, position, plot0_name, plot1_name,
-                pos_num);
+  new_channel->channel =
+      channel_cons(position, plot0_name, plot1_name, pos_num);
 
   SDL_Surface *sur_num = IMG_Load(get_relay_num(channel_number));
   if (sur_num == NULL) {
@@ -30,37 +27,38 @@ struct channel* channel_relay_build(SDL_Point position,
     return NULL;
   }
 
-  new_channel->channel_number = SDL_CreateTextureFromSurface(renderer, sur_num);
-  if (new_channel->channel_number == NULL) {
+  new_channel->channel_number.number =
+      SDL_CreateTextureFromSurface(renderer, sur_num);
+  if (new_channel->channel_number.number == NULL) {
     display_error_sdl("Can't create texture from surface sur_num");
     SDL_FreeSurface(sur_num);
     return NULL;
   }
-  new_channel->channel_number_pos = (SDL_Rect){
+
+  new_channel->channel_number.count = channel_number;
+  new_channel->channel_number.position = (SDL_Rect){
       .w = sur_num->w, .h = sur_num->h, .x = pos_num.x, .y = pos_num.y};
 
   SDL_FreeSurface(sur_num);
 
-  return (struct channel*)new_channel;
+  return (struct channel *)new_channel;
 }
 
-void channel_relay_free(struct channel_relay *channel) {
-  if (channel == NULL) {
+void channel_relay_free(struct channel_relay *rchannel) {
+  if (rchannel == NULL) {
     return;
   }
 
-  struct channel_relay *rchannel = (struct channel_relay *)channel;
   channel_free(rchannel->channel);
-
-  SDL_DestroyTexture(rchannel->channel_number);
+  SDL_DestroyTexture(rchannel->channel_number.number);
   free(rchannel);
-  channel = NULL;
+  rchannel = NULL;
 }
 
-void channel_relay_switch_number(struct channel_relay *channel) {
+void channel_relay_switch_number(struct channel_relay *rchannel) {
 
   size_t num = 0;
-  switch (channel->channel_number_count) {
+  switch (rchannel->channel_number.count) {
   case 0:
     num = 2;
     break;
@@ -81,13 +79,14 @@ void channel_relay_switch_number(struct channel_relay *channel) {
     return;
   }
 
-  if (channel->channel_number != NULL) {
-    SDL_DestroyTexture(channel->channel_number);
-    channel->channel_number = NULL;
+  if (rchannel->channel_number.number != NULL) {
+    SDL_DestroyTexture(rchannel->channel_number.number);
+    rchannel->channel_number.number = NULL;
   }
 
-  channel->channel_number = SDL_CreateTextureFromSurface(renderer, sur_num);
-  if (channel->channel_number == NULL) {
+  rchannel->channel_number.number =
+      SDL_CreateTextureFromSurface(renderer, sur_num);
+  if (rchannel->channel_number.number == NULL) {
     display_error_sdl("Can't create texture from surface sur_num");
     SDL_FreeSurface(sur_num);
     return;

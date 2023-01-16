@@ -9,9 +9,6 @@ struct channel {
   bool state;
 };
 
-
-struct channel *channel_alloc(void);
-void channel_build(struct channel *channel, SDL_Point position,
-                   char const *plot0_name, char const *plot1_name,
-                   SDL_Rect pos_num);
+struct channel *channel_cons(SDL_Point position, char const *plot0_name,
+                             char const *plot1_name, SDL_Rect pos_num);
 void channel_free(struct channel *channel);

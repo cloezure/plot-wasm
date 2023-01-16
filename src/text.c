@@ -7,7 +7,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
 
-static inline void text_info_update(struct text *text, char const *info);
+static inline void text_content_update(struct text *text, char const *content);
 
 char const *text_get_font_type(enum TEXT_FONT_TYPE type) {
   switch (type) {
@@ -18,8 +18,9 @@ char const *text_get_font_type(enum TEXT_FONT_TYPE type) {
   }
 }
 
-struct text *text_build(char const *font_path, int32_t font_size,
-                        SDL_Color color, SDL_Point position, char const *info) {
+struct text *text_cons(char const *font_path, int32_t font_size,
+                       SDL_Color color, SDL_Point position,
+                       char const *content) {
   struct text *new_text = malloc(sizeof *new_text);
   new_text->font = TTF_OpenFont(font_path, font_size);
 
@@ -29,7 +30,7 @@ struct text *text_build(char const *font_path, int32_t font_size,
 
   new_text->color = color;
   SDL_Surface *sur =
-      TTF_RenderText_Blended(new_text->font, info, new_text->color);
+      TTF_RenderText_Blended(new_text->font, content, new_text->color);
   if (sur == NULL) {
     display_error_sdl("surface could not be created");
   }
@@ -46,7 +47,7 @@ struct text *text_build(char const *font_path, int32_t font_size,
 
   SDL_FreeSurface(sur);
 
-  text_info_update(new_text, info);
+  text_content_update(new_text, content);
   return new_text;
 }
 
@@ -61,19 +62,19 @@ void text_free(struct text *text) {
   SDL_DestroyTexture(text->texture);
   text->texture = NULL;
 
-  free(text->info);
-  text->info = NULL;
+  free(text->content);
+  text->content = NULL;
 
   free(text);
   text = NULL;
 }
 
-void text_change_info(struct text *text, char const *info) {
+void text_change_content(struct text *text, char const *content) {
   if (text == NULL) {
     return;
   }
 
-  SDL_Surface *sur = TTF_RenderText_Solid(text->font, info, text->color);
+  SDL_Surface *sur = TTF_RenderText_Solid(text->font, content, text->color);
 
   if (sur == NULL) {
     display_error_sdl("surface in text could not be init");
@@ -87,8 +88,8 @@ void text_change_info(struct text *text, char const *info) {
     display_error_sdl("text->texture could not be init");
   }
 
-  free(text->info);
-  text_info_update(text, info);
+  free(text->content);
+  text_content_update(text, content);
 
   SDL_FreeSurface(sur);
 }
@@ -98,7 +99,7 @@ void text_change_color(struct text *text, SDL_Color color) {
     return;
   }
 
-  SDL_Surface *sur = TTF_RenderText_Solid(text->font, text->info, color);
+  SDL_Surface *sur = TTF_RenderText_Solid(text->font, text->content, color);
 
   if (sur == NULL) {
     display_error_sdl("surface in text could not be init");
@@ -117,9 +118,9 @@ void text_change_color(struct text *text, SDL_Color color) {
   SDL_FreeSurface(sur);
 }
 
-static inline void text_info_update(struct text *text, char const *info) {
-  size_t const len = strlen(info) + 1;
-  text->info = malloc(sizeof(char) * len);
-  strncpy(text->info, info, len);
-  text->info[len] = '\0';
+static inline void text_content_update(struct text *text, char const *content) {
+  size_t const len = strlen(content) + 1;
+  text->content = malloc(sizeof(char) * len);
+  strncpy(text->content, content, len);
+  text->content[len] = '\0';
 }

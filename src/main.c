@@ -9,7 +9,7 @@
 #include "global.h"
 #include "graphics.h"
 
-#define VERSION 1.4+
+#define VERSION 1.4 +
 #define AUTHORS NOTIDMAN
 
 int main(void) {
@@ -17,7 +17,7 @@ int main(void) {
   int32_t const h = 734;
   int32_t const fps_draw = 60;
 
-  g_graphics = graphics_build(w, h, fps_draw);
+  g_graphics = graphics_cons(w, h, fps_draw);
   assert(g_graphics);
 
 #ifdef __EMSCRIPTEN__

@@ -1,6 +1,7 @@
 #pragma once
 #include "channel.h"
 #include "coord_info.h"
+#include "vec_channel.h"
 #include <SDL2/SDL.h>
 #include <stdint.h>
 
@@ -26,11 +27,6 @@ char *logger(void);
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void draw_plots_data(void);
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
 void off_channel(int channel_idx);
 
 struct graphics {
@@ -38,12 +34,14 @@ struct graphics {
   int32_t width_mid;
   int32_t height_mid;
   int32_t fps;
-  struct plot **plots;
-  struct coord_info_vec* coord_dots;
+  /* struct vec_coord_info *vec_coord_info; */
 
-  struct channels *service_channel;
-  struct channels *relay_channel;
+  struct vec_channel *relay;
+  struct vec_channel *service;
 };
 
-struct graphics *graphics_build(int32_t width, int32_t height, int32_t fps);
+struct graphics *graphics_cons(int32_t width, int32_t height, int32_t fps);
 void graphics_free(struct graphics *graphics);
+
+struct plot **graphics_plots_cons(struct graphics *graphics);
+void graphics_plots_free(struct plot **plots);
