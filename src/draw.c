@@ -1,8 +1,7 @@
 #include "draw.h"
 #include "channel.h"
-#include "channels.h"
-#include "channel_service.h"
 #include "channel_relay.h"
+#include "channel_service.h"
 #include "colorscheme.h"
 #include "common_function.h"
 #include "global.h"
@@ -10,6 +9,7 @@
 #include "parse.h"
 #include "plot.h"
 #include "text.h"
+#include "vec_channel.h"
 
 #include <SDL2/SDL_assert.h>
 #include <SDL2/SDL_events.h>
@@ -27,7 +27,7 @@ static inline void draw_background(SDL_Color color) {
   SDL_RenderClear(renderer);
 }
 
-static inline void draw_red_line_plot(struct plot* plot) {
+static inline void draw_red_line_plot(struct plot *plot) {
   float const x0 = plot->fft.x0;
   float const start_x = 0;
   float const mid_y = x0 + (float)plot->position.h / 2;
@@ -40,64 +40,64 @@ static inline void draw_red_line_plot(struct plot* plot) {
   SDL_RenderSetViewport(renderer, &g_graphics->pos);
 }
 
-static inline void draw_plot_data(struct plot* plot) {
-    if(check_zero_array(plot->fft.data, plot->fft.length)) {
-      draw_red_line_plot(plot);
-      return;
-    }
+static inline void draw_plot_data(struct plot *plot) {
+  if (check_zero_array(plot->fft.data, plot->fft.length)) {
+    draw_red_line_plot(plot);
+    return;
+  }
 
-    float const dx = plot->fft.dx;
-    float const x0 = plot->fft.x0;
-    /* float const start_x = plot->position.x; */
-    float const start_x = 0;
-    /* float const mid_y = (float)plot->position.y + x0 + */
-    /*                          (float)plot->position.h / 2; */
-    float const mid_y = x0 + (float)plot->position.h / 2;
-    SDL_FPoint prev = {.x = start_x, .y = mid_y};
-    SDL_FPoint next = {.x = prev.x, .y = prev.y};
+  float const dx = plot->fft.dx;
+  float const x0 = plot->fft.x0;
+  /* float const start_x = plot->position.x; */
+  float const start_x = 0;
+  /* float const mid_y = (float)plot->position.y + x0 + */
+  /*                          (float)plot->position.h / 2; */
+  float const mid_y = x0 + (float)plot->position.h / 2;
+  SDL_FPoint prev = {.x = start_x, .y = mid_y};
+  SDL_FPoint next = {.x = prev.x, .y = prev.y};
 
-    size_t const fft_length = plot->fft.length;
-    SDL_RenderSetViewport(renderer, &plot->position);
-    SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
-    for (size_t j = 0; j < fft_length; ++j) {
-      float const *fft = plot->fft.data;
+  size_t const fft_length = plot->fft.length;
+  SDL_RenderSetViewport(renderer, &plot->position);
+  SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
+  for (size_t j = 0; j < fft_length; ++j) {
+    float const *fft = plot->fft.data;
 
-      next.y = fft[j] + mid_y + plot->scale;
-      SDL_RenderDrawLineF(renderer, prev.x, prev.y, next.x, next.y);
-      next.x += dx;
-      prev.x = next.x;
-      prev.y = next.y;
-    }
-    SDL_RenderSetViewport(renderer, &g_graphics->pos);
+    next.y = fft[j] + mid_y + plot->scale;
+    SDL_RenderDrawLineF(renderer, prev.x, prev.y, next.x, next.y);
+    next.x += dx;
+    prev.x = next.x;
+    prev.y = next.y;
+  }
+  SDL_RenderSetViewport(renderer, &g_graphics->pos);
 }
 
 static inline void draw_plots(void) {
+  struct plot **plots = graphics_plots_cons(g_graphics);
   size_t idx = 0;
-  for(size_t i = 0; i < g_graphics->service_channel->channels_count; ++i) {
-    if(!g_graphics->service_channel->states[i]) {
-      draw_red_line_plot(g_graphics->plots[idx]);
-      draw_red_line_plot(g_graphics->plots[idx+1]);
+  for (size_t i = 0; i < g_graphics->service->count; ++i) {
+    if (!g_graphics->service->channels[i]->state) {
+      draw_red_line_plot(plots[idx]);
+      draw_red_line_plot(plots[idx + 1]);
       idx += 2;
-    }
-    else {
-      draw_plot_data(g_graphics->plots[idx]);
-      draw_plot_data(g_graphics->plots[idx+1]);
+    } else {
+      draw_plot_data(plots[idx]);
+      draw_plot_data(plots[idx + 1]);
       idx += 2;
     }
   }
 
-  for(size_t i = 0; i < g_graphics->relay_channel->channels_count; ++i) {
-    if(!g_graphics->relay_channel->states[i]) {
-      draw_red_line_plot(g_graphics->plots[idx]);
-      draw_red_line_plot(g_graphics->plots[idx+1]);
+  for (size_t i = 0; i < g_graphics->relay->count; ++i) {
+    if (!g_graphics->relay->channels[i]->state) {
+      draw_red_line_plot(plots[idx]);
+      draw_red_line_plot(plots[idx + 1]);
       idx += 2;
-    }
-    else {
-      draw_plot_data(g_graphics->plots[idx]);
-      draw_plot_data(g_graphics->plots[idx+1]);
+    } else {
+      draw_plot_data(plots[idx]);
+      draw_plot_data(plots[idx + 1]);
       idx += 2;
     }
   }
+  graphics_plots_free(plots);
 }
 
 inline void draw_fps(void) {
@@ -105,7 +105,8 @@ inline void draw_fps(void) {
   char buff[100] = {0};
   sprintf(buff, "%d", g_graphics->fps);
 
-  struct text *fps = text_build(text_get_font_type(TEXT_FONT_BOLD), 60, COLOR_GREEN, pos, buff);
+  struct text *fps =
+      text_cons(text_get_font_type(TEXT_FONT_BOLD), 60, COLOR_GREEN, pos, buff);
   fps->position.x = g_graphics->pos.w - fps->position.w - 10;
 
   DRAW_IN_REN(fps->texture, &fps->position);
@@ -124,8 +125,8 @@ static inline void draw_plots_name(struct channel *channel) {
   DRAW_IN_REN(channel->plot1->name->texture, &channel->plot1->name->position);
 }
 
-static inline void draw_channels_service(struct channels *channels) {
-  for (size_t i = 0; i < channels->channels_count; ++i) {
+static inline void draw_channels_service(struct vec_channel *channels) {
+  for (size_t i = 0; i < channels->count; ++i) {
 
     struct channel_service *schannel =
         (struct channel_service *)channels->channels[i];
@@ -140,8 +141,8 @@ static inline void draw_channels_service(struct channels *channels) {
   }
 }
 
-static inline void draw_channels_relay(struct channels *channels) {
-  for (size_t i = 0; i < channels->channels_count; ++i) {
+static inline void draw_channels_relay(struct vec_channel *channels) {
+  for (size_t i = 0; i < channels->count; ++i) {
 
     struct channel_relay *rchannel =
         (struct channel_relay *)channels->channels[i];
@@ -153,7 +154,8 @@ static inline void draw_channels_relay(struct channels *channels) {
     draw_plots_name(rchannel->channel);
 
     // draw channels number
-    DRAW_IN_REN(rchannel->channel_number, &rchannel->channel_number_pos);
+    DRAW_IN_REN(rchannel->channel_number.number,
+                &rchannel->channel_number.position);
   }
 }
 
@@ -163,14 +165,14 @@ static inline void draw_line_channel_delim(void) {
   SDL_RenderDrawRect(renderer, &rec);
 }
 
-static inline void draw_coord_info(struct plot* plot) {
+static inline void draw_coord_info(struct plot *plot) {
   /* if(mouse.x  plot->position.x) */
 }
 
 static inline void draw(void) {
   draw_background(COLOR_BACKGROUND);
-  draw_channels_service(g_graphics->service_channel);
-  draw_channels_relay(g_graphics->relay_channel);
+  draw_channels_service(g_graphics->service);
+  draw_channels_relay(g_graphics->relay);
   draw_line_channel_delim();
   draw_fps();
   draw_plots();
@@ -188,13 +190,12 @@ void handle_events(void) {
   frame_start = SDL_GetTicks();
 
   SDL_Event event;
-  while(SDL_PollEvent(&event)) {
-    if(event.type == SDL_QUIT) {
-        graphics_free(g_graphics);
-        exit(EXIT_SUCCESS);
-    }
-    else if(event.type == SDL_MOUSEMOTION) {
-        SDL_GetMouseState(&mouse.x, &mouse.y);
+  while (SDL_PollEvent(&event)) {
+    if (event.type == SDL_QUIT) {
+      graphics_free(g_graphics);
+      exit(EXIT_SUCCESS);
+    } else if (event.type == SDL_MOUSEMOTION) {
+      SDL_GetMouseState(&mouse.x, &mouse.y);
     }
   }
 

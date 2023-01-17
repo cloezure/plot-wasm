@@ -73,28 +73,32 @@ struct plot **graphics_plots_cons(struct graphics *graphics) {
 
 void graphics_plots_free(struct plot **plots) { free(plots); }
 
-static inline void off_channel_relay(int channel_idx) {
-  struct vec_channel *channels = g_graphics->relay;
+static inline bool check_channel_state(struct channel **channels,
+                                       int channel_idx) {
+  if (channels[channel_idx]->state == false)
+    return false;
+  channels[channel_idx]->state = false;
 
-  if (channels->states[channel_idx] == false)
-    return;
-  channels->states[channel_idx] = false;
-
-  struct channel_relay *rel =
-      (struct channel_relay *)channels->channels[channel_idx];
-  channel_relay_switch_number(rel);
+  return true;
 }
 
-static inline void off_channel_service(int channel_idx) {
-  struct channels *channels = g_graphics->service_channel;
-
-  if (channels->states[channel_idx] == false)
+static inline void off_channel_relay(struct channel **channels,
+                                     int channel_idx) {
+  if (!check_channel_state(channels, channel_idx))
     return;
-  channels->states[channel_idx] = false;
 
-  struct channel_service *ser =
-      (struct channel_service *)channels->channels[channel_idx];
-  text_change_color(ser->channel_number, COLOR_CHANNEL_NUMBER_OFF);
+  channel_relay_switch_number((struct channel_relay *)channels[channel_idx]);
+}
+
+static inline void off_channel_service(struct channel **channels,
+                                       int channel_idx) {
+
+  if (!check_channel_state(channels, channel_idx))
+    return;
+
+  text_change_color(
+      ((struct channel_service *)channels[channel_idx])->channel_number,
+      COLOR_CHANNEL_NUMBER_OFF);
 }
 
 #ifdef __EMSCRIPTEN__
@@ -104,11 +108,11 @@ void off_channel(int channel_idx) {
   if (channel_idx < 0 || channel_idx >= (int)g_plots_count / 2)
     return;
 
-  int const serv_count = g_graphics->service_channel->channels_count - 1;
+  int const serv_count = g_graphics->service->count - 1;
   if (channel_idx <= serv_count) {
-    off_channel_service(channel_idx);
+    off_channel_service(g_graphics->service->channels, channel_idx);
   } else {
-    off_channel_relay(channel_idx - 4);
+    off_channel_relay(g_graphics->relay->channels, channel_idx - 4);
   }
 }
 
@@ -167,10 +171,9 @@ struct graphics *graphics_cons(int32_t width, int32_t height, int32_t fps) {
 }
 
 void graphics_free(struct graphics *graphics) {
-  channels_service_free(graphics->service_channel);
-  channels_relay_free(graphics->relay_channel);
+  vec_channel_service_free(graphics->service);
+  vec_channel_relay_free(graphics->relay);
 
-  free(graphics->plots);
   free(graphics);
   graphics = NULL;
 
