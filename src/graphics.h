@@ -1,5 +1,5 @@
 #pragma once
-#include "coord_info.h"
+#include "coinf.h"
 #include "rchannel.h"
 #include "schannel.h"
 #include <SDL2/SDL.h>

@@ -1,7 +1,6 @@
 #include "text.h"
-#include "common_function.h"
+#include "comfun.h"
 #include "global.h"
-
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_ttf.h>

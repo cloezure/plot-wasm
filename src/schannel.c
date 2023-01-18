@@ -1,6 +1,6 @@
 #include "schannel.h"
 #include "colorscheme.h"
-#include "common_function.h"
+#include "comfun.h"
 #include "text.h"
 
 struct schannel *schannel_init(SDL_Point position, int32_t channel_number,

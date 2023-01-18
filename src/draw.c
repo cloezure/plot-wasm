@@ -1,6 +1,6 @@
 #include "draw.h"
 #include "colorscheme.h"
-#include "common_function.h"
+#include "comfun.h"
 #include "global.h"
 #include "graphics.h"
 #include "parse.h"

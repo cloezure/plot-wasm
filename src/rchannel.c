@@ -1,5 +1,5 @@
 #include "rchannel.h"
-#include "common_function.h"
+#include "comfun.h"
 #include "global.h"
 #include "plot.h"
 

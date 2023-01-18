@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "common_function.h"
+#include "comfun.h"
 #include "draw.h"
 #include "global.h"
 #include "graphics.h"
