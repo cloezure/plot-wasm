@@ -54,5 +54,6 @@ dkms.conf
 # Js files
 build/*.mjs
 build/*.data
-.ccls-chache
-.ccls-chache/*
+
+builddir/*
+builddir

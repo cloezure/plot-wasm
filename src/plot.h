@@ -17,7 +17,7 @@ struct plot {
   } fft;
 };
 
-struct plot *plot_cons(SDL_Point position, char const *name);
+struct plot *plot_init(SDL_Point position, char const *name);
 void plot_free(struct plot *plot);
 
 void plot_fft_update(struct plot *plot, float *data, int length, float dx,

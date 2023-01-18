@@ -20,7 +20,7 @@ char const *text_get_font_type(enum TEXT_FONT_TYPE type) {
   }
 }
 
-struct text *text_cons(char const *font_path, int32_t font_size,
+struct text *text_init(char const *font_path, int32_t font_size,
                        SDL_Color color, SDL_Point position,
                        char const *content) {
   struct text *new_text = malloc(sizeof *new_text);

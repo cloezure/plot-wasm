@@ -15,7 +15,7 @@ struct text {
 enum TEXT_FONT_TYPE { TEXT_FONT_REGULAR = 0, TEXT_FONT_BOLD = 1 };
 char const *text_get_font_type(enum TEXT_FONT_TYPE type);
 
-struct text *text_cons(char const *font_path, int32_t font_size,
+struct text *text_init(char const *font_path, int32_t font_size,
                        SDL_Color color, SDL_Point position,
                        char const *content);
 

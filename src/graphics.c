@@ -1,13 +1,11 @@
 #include "graphics.h"
-#include "channel.h"
-#include "channel_relay.h"
-#include "channel_service.h"
 #include "colorscheme.h"
 #include "common_function.h"
 #include "coord_info.h"
 #include "global.h"
 #include "parse.h"
 #include "plot.h"
+#include "rchannel.h"
 #include "text.h"
 
 #include <SDL2/SDL.h>
@@ -25,14 +23,13 @@ void set_fps(int fps) { g_graphics->fps = fps; }
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void trans_plot_data(int plot_idx, float *data, int length, float dx,
-                     float x0) {
+void push_plot_data(int plot_idx, float *data, int length, float dx, float x0) {
   if (plot_idx < 0 || plot_idx > (int)g_plots_count)
     return;
 
   plot_idx = index_plot_switch(plot_idx);
 
-  struct plot **plots = graphics_plots_cons(g_graphics);
+  struct plot **plots = graphics_plots_init(g_graphics);
   plot_fft_update(plots[plot_idx], data, length, dx / (100000000 - 25000000),
                   x0 / 10000);
   graphics_plots_free(plots);
@@ -41,35 +38,21 @@ void trans_plot_data(int plot_idx, float *data, int length, float dx,
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-char *logger(void) {
-  static char buffer_logger[100];
-  sprintf(buffer_logger, "%s", "Some log..");
-  return buffer_logger;
-}
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
 void window_size(int w, int h) { SDL_SetWindowSize(window, w, h); }
 
-struct plot **graphics_plots_cons(struct graphics *graphics) {
+struct plot **graphics_plots_init(struct graphics *graphics) {
   struct plot **plots = malloc(sizeof(struct plot *) * g_plots_count);
 
   size_t plot_i = 0;
   for (size_t i = 0; i < graphics->service->count; ++i) {
-    plots[plot_i] = ((struct channel_service *)graphics->service->channels[i])
-                        ->channel->plot0;
-    plots[plot_i + 1] =
-        ((struct channel_service *)graphics->service->channels[i])
-            ->channel->plot1;
+    plots[plot_i] = graphics->service->schs[i]->plot0;
+    plots[plot_i + 1] = graphics->service->schs[i]->plot1;
     plot_i += 2;
   }
 
   for (size_t i = 0; i < graphics->relay->count; ++i) {
-    plots[plot_i] =
-        ((struct channel_relay *)graphics->relay->channels[i])->channel->plot0;
-    plots[plot_i + 1] =
-        ((struct channel_relay *)graphics->relay->channels[i])->channel->plot1;
+    plots[plot_i] = graphics->relay->rchs[i]->plot0;
+    plots[plot_i + 1] = graphics->relay->rchs[i]->plot1;
     plot_i += 2;
   }
 
@@ -77,27 +60,6 @@ struct plot **graphics_plots_cons(struct graphics *graphics) {
 }
 
 void graphics_plots_free(struct plot **plots) { free(plots); }
-
-static inline void off_channel_relay(struct vec_channel *vec, int channel_idx) {
-  if (vec->channels[channel_idx]->state == false)
-    return;
-  vec->channels[channel_idx]->state = false;
-
-  channel_relay_switch_number(
-      (struct channel_relay *)vec->channels[channel_idx]);
-}
-
-static inline void off_channel_service(struct vec_channel *vec,
-                                       int channel_idx) {
-  if (vec->channels[channel_idx]->state == false)
-    return;
-  vec->channels[channel_idx]->state = false;
-
-  struct channel_service *serv =
-      (struct channel_service *)vec->channels[channel_idx];
-
-  text_change_color(serv->channel_number, COLOR_CHANNEL_NUMBER_OFF);
-}
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -108,13 +70,13 @@ void off_channel(int channel_idx) {
 
   int const serv_count = g_graphics->service->count - 1;
   if (channel_idx <= serv_count) {
-    off_channel_service(g_graphics->service, channel_idx);
+    off_schannel(g_graphics->service, channel_idx);
   } else {
-    off_channel_relay(g_graphics->relay, channel_idx - 4);
+    off_rchannel(g_graphics->relay, channel_idx - 4);
   }
 }
 
-struct graphics *graphics_cons(int32_t width, int32_t height, int32_t fps) {
+struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   struct graphics *new_graphics = malloc(sizeof *new_graphics);
   assert(new_graphics);
   new_graphics->pos = (SDL_Rect){.x = 0, .y = 0, .w = width, .h = height};
@@ -159,19 +121,15 @@ struct graphics *graphics_cons(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-  new_graphics->service =
-      vec_channel_service_cons(4, (SDL_Point){.x = 0, .y = 0});
-  new_graphics->relay =
-      vec_channel_relay_cons(2, (SDL_Point){.x = 0, .y = 244 * 2});
-
-  /* new_graphics->coord_dots = NULL; */
+  new_graphics->service = vec_schannel_init(4, (SDL_Point){.x = 0, .y = 0});
+  new_graphics->relay = vec_rchannel_init(2, (SDL_Point){.x = 0, .y = 244 * 2});
 
   return new_graphics;
 }
 
 void graphics_free(struct graphics *graphics) {
-  vec_channel_service_free(graphics->service);
-  vec_channel_relay_free(graphics->relay);
+  vec_schannel_free(graphics->service);
+  vec_rchannel_free(graphics->relay);
 
   free(graphics);
   graphics = NULL;

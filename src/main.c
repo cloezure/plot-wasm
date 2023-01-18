@@ -18,7 +18,7 @@ int main(void) {
   int32_t const h = 734;
   int32_t const fps_draw = 60;
 
-  g_graphics = graphics_cons(w, h, fps_draw);
+  g_graphics = graphics_init(w, h, fps_draw);
   assert(g_graphics);
 
 #ifdef __EMSCRIPTEN__
