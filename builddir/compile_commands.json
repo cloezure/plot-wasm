@@ -1,0 +1,74 @@
+[
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_channel.c.o -MF plot.p/src_channel.c.o.d -o plot.p/src_channel.c.o -c ../src/channel.c",
+    "file": "../src/channel.c",
+    "output": "plot.p/src_channel.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_channel_relay.c.o -MF plot.p/src_channel_relay.c.o.d -o plot.p/src_channel_relay.c.o -c ../src/channel_relay.c",
+    "file": "../src/channel_relay.c",
+    "output": "plot.p/src_channel_relay.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_channel_service.c.o -MF plot.p/src_channel_service.c.o.d -o plot.p/src_channel_service.c.o -c ../src/channel_service.c",
+    "file": "../src/channel_service.c",
+    "output": "plot.p/src_channel_service.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_coord_info.c.o -MF plot.p/src_coord_info.c.o.d -o plot.p/src_coord_info.c.o -c ../src/coord_info.c",
+    "file": "../src/coord_info.c",
+    "output": "plot.p/src_coord_info.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_draw.c.o -MF plot.p/src_draw.c.o.d -o plot.p/src_draw.c.o -c ../src/draw.c",
+    "file": "../src/draw.c",
+    "output": "plot.p/src_draw.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_global.c.o -MF plot.p/src_global.c.o.d -o plot.p/src_global.c.o -c ../src/global.c",
+    "file": "../src/global.c",
+    "output": "plot.p/src_global.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_graphics.c.o -MF plot.p/src_graphics.c.o.d -o plot.p/src_graphics.c.o -c ../src/graphics.c",
+    "file": "../src/graphics.c",
+    "output": "plot.p/src_graphics.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_main.c.o -MF plot.p/src_main.c.o.d -o plot.p/src_main.c.o -c ../src/main.c",
+    "file": "../src/main.c",
+    "output": "plot.p/src_main.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_parse.c.o -MF plot.p/src_parse.c.o.d -o plot.p/src_parse.c.o -c ../src/parse.c",
+    "file": "../src/parse.c",
+    "output": "plot.p/src_parse.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_plot.c.o -MF plot.p/src_plot.c.o.d -o plot.p/src_plot.c.o -c ../src/plot.c",
+    "file": "../src/plot.c",
+    "output": "plot.p/src_plot.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_text.c.o -MF plot.p/src_text.c.o.d -o plot.p/src_text.c.o -c ../src/text.c",
+    "file": "../src/text.c",
+    "output": "plot.p/src_text.c.o"
+  },
+  {
+    "directory": "/home/nim/dev/c/plot-wasm/builddir",
+    "command": "cc -Iplot.p -I. -I.. -I../src -I/usr/include/SDL2 -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -std=c17 -g -D_REENTRANT -MD -MQ plot.p/src_vec_channel.c.o -MF plot.p/src_vec_channel.c.o.d -o plot.p/src_vec_channel.c.o -c ../src/vec_channel.c",
+    "file": "../src/vec_channel.c",
+    "output": "plot.p/src_vec_channel.c.o"
+  }
+]

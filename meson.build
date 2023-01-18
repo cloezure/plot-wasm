@@ -1,15 +1,15 @@
 project('plot-wasm', 'c',
         version         : '1.4.+',
         license         : 'Apache-2.0',
-        meson_version   : '>=1.0.0',
+        meson_version   : '>=0.5.0',
         default_options : ['c_std=c17'])
 
 cc = meson.get_compiler('c')
 
 deps = [
   dependency('sdl2'),
-  dependency('sdl2_ttf'),
-  dependency('sdl2_image')
+  dependency('sdl2ttf'),
+  dependency('sdl2-image')
 ]
 
 incdir = include_directories('src')
@@ -25,8 +25,7 @@ sources = [
   'src/parse.c',
   'src/plot.c',
   'src/text.c',
-  'src/vec_channel.c',
-  'src/vec_channel.h']
+  'src/vec_channel.c']
 
 executable('plot', sources,
            include_directories : incdir,
