@@ -1,2 +1,0 @@
-/home/nim/dev/c/plot-wasm/builddir/meson-private/cmake_sdl2_ttf/CMakeFiles/rebuild_cache.dir
-/home/nim/dev/c/plot-wasm/builddir/meson-private/cmake_sdl2_ttf/CMakeFiles/edit_cache.dir
