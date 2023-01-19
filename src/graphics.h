@@ -31,6 +31,7 @@ void window_size(int w, int h);
 
 struct graphics {
   SDL_Rect pos;
+  SDL_Point mouse;
   int32_t width_mid;
   int32_t height_mid;
   int32_t fps;

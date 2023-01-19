@@ -7,7 +7,6 @@ struct plot {
   SDL_Rect position;
   SDL_Texture *background;
   struct text *name;
-  float scale;
 
   struct {
     float *data;

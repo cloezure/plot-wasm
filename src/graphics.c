@@ -17,13 +17,18 @@ static inline size_t index_plot_switch(size_t idx);
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void set_fps(int fps) { g_graphics->fps = fps; }
+void set_fps(int fps) {
+  if (fps <= 0)
+    return;
+
+  g_graphics->fps = fps;
+}
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
 void push_plot_data(int plot_idx, float *data, int length, float dx, float x0) {
-  if (plot_idx < 0 || plot_idx > (int)g_plots_count)
+  if (plot_idx < 0 || plot_idx > PLOTS_COUNT)
     return;
 
   plot_idx = index_plot_switch(plot_idx);
@@ -40,7 +45,7 @@ EMSCRIPTEN_KEEPALIVE
 void window_size(int w, int h) { SDL_SetWindowSize(window, w, h); }
 
 struct plot **graphics_plots_init(struct graphics *graphics) {
-  struct plot **plots = malloc(sizeof(struct plot *) * g_plots_count);
+  struct plot **plots = malloc(sizeof(struct plot *) * PLOTS_COUNT);
 
   size_t plot_i = 0;
   for (size_t i = 0; i < graphics->service->count; ++i) {
@@ -64,7 +69,7 @@ void graphics_plots_free(struct plot **plots) { free(plots); }
 EMSCRIPTEN_KEEPALIVE
 #endif
 void off_channel(int channel_idx) {
-  if (channel_idx < 0 || channel_idx >= (int)g_plots_count / 2)
+  if (channel_idx < 0 || channel_idx >= PLOTS_COUNT / 2)
     return;
 
   int const serv_count = g_graphics->service->count - 1;
@@ -82,6 +87,7 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->width_mid = width / 2;
   new_graphics->height_mid = height / 2;
   new_graphics->fps = fps;
+  new_graphics->mouse = (SDL_Point){0, 0};
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     display_error_sdl("sdl could not init");

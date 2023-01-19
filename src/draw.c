@@ -1,4 +1,5 @@
 #include "draw.h"
+#include "coinf.h"
 #include "colorscheme.h"
 #include "comfun.h"
 #include "global.h"
@@ -13,12 +14,26 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_hints.h>
 #include <SDL2/SDL_keyboard.h>
+#include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_pixels.h>
+#include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
+
+static inline void draw(void);
+static inline void draw_background(SDL_Color color);
+static inline void draw_red_line_plot(struct plot *plot);
+static inline void draw_plot_data(struct plot *plot);
+static inline void draw_plots(void);
+static inline void draw_fps(void);
+static inline void draw_rchannels(struct vec_rchannel *vec);
+static inline void draw_schannels(struct vec_schannel *vec);
+static inline void draw_line_channel_delim(void);
+static inline void draw_coinf(struct coinf *coinf);
+static inline void draw_red_line_plot_nodata(struct plot *plot);
 
 static inline void draw_background(SDL_Color color) {
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
@@ -35,12 +50,49 @@ static inline void draw_red_line_plot(struct plot *plot) {
   SDL_SetRenderDrawColor(renderer, 0xDF, 0x40, 0x53, 0xFF);
   SDL_RenderSetViewport(renderer, &plot->position);
   SDL_RenderDrawLineF(renderer, start_x, mid_dy, end_start_x, mid_dy);
+
+  float const mx = g_graphics->mouse.x;
+  float const my = g_graphics->mouse.y;
+  float const ph = plot->position.h + plot->position.y;
+  float const pw = plot->position.w + plot->position.x;
+
+  if (mx >= plot->position.x && my >= plot->position.y && mx < pw && my < ph) {
+    struct coinf *coinf = coinf_init_text((SDL_Point){mx, my}, "channel off");
+    draw_coinf(coinf);
+    coinf_free(coinf);
+  }
+
+  SDL_RenderSetViewport(renderer, &g_graphics->pos);
+}
+
+static inline void draw_red_line_plot_nodata(struct plot *plot) {
+  float const x0 = plot->fft.x0;
+  float const start_x = 0;
+  float const mid_y = x0 + (float)plot->position.h / 2;
+
+  float const end_start_x = start_x + plot->position.w;
+  float const mid_dy = mid_y + 40;
+  SDL_SetRenderDrawColor(renderer, 0xDF, 0x40, 0x53, 0xFF);
+  SDL_RenderSetViewport(renderer, &plot->position);
+  SDL_RenderDrawLineF(renderer, start_x, mid_dy, end_start_x, mid_dy);
+
+  float const mx = g_graphics->mouse.x;
+  float const my = g_graphics->mouse.y;
+  float const ph = plot->position.h + plot->position.y;
+  float const pw = plot->position.w + plot->position.x;
+
+  if (mx >= plot->position.x && my >= plot->position.y && mx < pw && my < ph) {
+    struct coinf *coinf = coinf_init_text((SDL_Point){mx, my}, "no data");
+    draw_coinf(coinf);
+    coinf_free(coinf);
+  }
+
   SDL_RenderSetViewport(renderer, &g_graphics->pos);
 }
 
 static inline void draw_plot_data(struct plot *plot) {
   if (check_zero_array(plot->fft.data, plot->fft.length)) {
-    draw_red_line_plot(plot);
+    draw_red_line_plot_nodata(plot);
     return;
   }
 
@@ -60,12 +112,34 @@ static inline void draw_plot_data(struct plot *plot) {
   for (size_t j = 0; j < fft_length; ++j) {
     float const *fft = plot->fft.data;
 
-    next.y = fft[j] + mid_y + plot->scale;
+    next.y = fft[j] + mid_y;
     SDL_RenderDrawLineF(renderer, prev.x, prev.y, next.x, next.y);
     next.x += dx;
     prev.x = next.x;
     prev.y = next.y;
+
+    float const mx = g_graphics->mouse.x;
+    float const my = g_graphics->mouse.y;
+    float const ph = plot->position.h + plot->position.y;
+    float const pw = plot->position.w + plot->position.x;
+
+    if (mx >= plot->position.x && my >= plot->position.y && mx < pw &&
+        my < ph) {
+      float ppx = prev.x;
+      float ppy = prev.y;
+      int rmx, rmy;
+      SDL_GetRelativeMouseState(&rmx, &rmy);
+      printf("rmx = %d rmy = %d ppx = %f ppy = %f\n", rmx, rmy, ppx, ppy);
+      if (rmx == (int)ppx && rmy == (int)ppy) {
+        struct coinf *coinf = coinf_init((SDL_Point){ppx, ppy}, prev.x, fft[j]);
+        draw_coinf(coinf);
+        coinf_free(coinf);
+        SDL_RenderSetViewport(renderer, &plot->position);
+        SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
+      }
+    }
   }
+
   SDL_RenderSetViewport(renderer, &g_graphics->pos);
 }
 
@@ -152,9 +226,15 @@ static inline void draw_line_channel_delim(void) {
   SDL_RenderDrawRect(renderer, &rec);
 }
 
-/* static inline void draw_coord_info(struct plot *plot) { */
-/*   /\* if(mouse.x  plot->position.x) *\/ */
-/* } */
+static inline void draw_coinf(struct coinf *coinf) {
+  SDL_RenderSetViewport(renderer, &g_graphics->pos);
+  SDL_SetRenderDrawColor(renderer, coinf->back.r, coinf->back.g, coinf->back.b,
+                         coinf->back.a);
+  // draw back
+  SDL_RenderFillRect(renderer, &coinf->inf_txt->position);
+  // draw text
+  DRAW_IN_REN(coinf->inf_txt->texture, &coinf->inf_txt->position);
+}
 
 static inline void draw(void) {
   draw_background(COLOR_BACKGROUND);
@@ -182,8 +262,7 @@ void handle_events(void) {
       graphics_free(g_graphics);
       exit(EXIT_SUCCESS);
     } else if (event.type == SDL_MOUSEMOTION) {
-      SDL_GetMouseState(&mouse.x, &mouse.y);
-    } else if (event.type == SDL_WINDOWEVENT) {
+      SDL_GetMouseState(&g_graphics->mouse.x, &g_graphics->mouse.y);
     }
   }
 
