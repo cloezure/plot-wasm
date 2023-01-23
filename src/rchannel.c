@@ -4,6 +4,7 @@
 #include "plot.h"
 
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 
 char const relay_number_1_off[] = "res/rim_1_off.png";
@@ -37,6 +38,7 @@ static inline bool rchannel_init_number(struct rchannel *rchannel,
   rchannel->number.value = channel_number;
   rchannel->number.position.w = sur_num->w;
   rchannel->number.position.h = sur_num->h;
+  rchannel->dpos = (SDL_Point){0, 0};
 
   SDL_FreeSurface(sur_num);
   return ok;
@@ -58,6 +60,7 @@ struct rchannel *rchannel_init(SDL_Point position, int32_t channel_number,
 
   rchannel->number.position.x = pos_num.x;
   rchannel->number.position.y = pos_num.y;
+  rchannel->number.texture = NULL;
   if (!rchannel_init_number(rchannel, channel_number))
     return NULL;
 

@@ -29,6 +29,11 @@ EMSCRIPTEN_KEEPALIVE
 #endif
 void window_size(int w, int h);
 
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+void change_position_channel(int channel_idx, int x, int y);
+
 struct graphics {
   SDL_Rect pos;
   SDL_Point mouse;

@@ -1,6 +1,7 @@
 #pragma once
 #include "text.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_rect.h>
 #include <stdbool.h>
 
 struct plot {
@@ -9,7 +10,7 @@ struct plot {
   struct text *name;
 
   struct {
-    float *data;
+    SDL_FPoint *data;
     size_t length;
     float dx;
     float x0;

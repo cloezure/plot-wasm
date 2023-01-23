@@ -3,7 +3,7 @@
 #include "text.h"
 #include <SDL2/SDL_rect.h>
 
-struct coinf *coinf_init(SDL_Point pos, float x, float y) {
+struct coinf *coinf_init_coord(SDL_Point pos, float x, float y) {
   struct coinf *info = malloc(sizeof *info);
   size_t const size_buff = 100;
   char buff[size_buff];

@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
@@ -26,9 +27,9 @@ static inline bool is_even(int32_t number) { return number % 2 == 0; }
 
 static inline bool is_odd(int32_t number) { return number % 2 != 0; }
 
-static inline bool check_zero_array(float *data, size_t length) {
+static inline bool check_zero_array(SDL_FPoint *data, size_t length) {
   REPEAT(length) {
-    if (*data != 0.0f) {
+    if ((*data).y != 0.0f) {
       return false;
     }
     ++data;

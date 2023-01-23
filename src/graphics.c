@@ -9,6 +9,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_ttf.h>
 #include <assert.h>
 
@@ -22,6 +23,21 @@ void set_fps(int fps) {
     return;
 
   g_graphics->fps = fps;
+}
+
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+void change_position_channel(int channel_idx, int x, int y) {
+  if (channel_idx < 0 || channel_idx >= PLOTS_COUNT / 2)
+    return;
+
+  int const serv_count = g_graphics->service->count - 1;
+  if (channel_idx <= serv_count) {
+    g_graphics->service->schs[channel_idx]->dpos = (SDL_Point){x, y};
+  } else {
+    g_graphics->relay->rchs[channel_idx - 4]->dpos = (SDL_Point){x, y};
+  }
 }
 
 #ifdef __EMSCRIPTEN__
@@ -42,7 +58,11 @@ void push_plot_data(int plot_idx, float *data, int length, float dx, float x0) {
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void window_size(int w, int h) { SDL_SetWindowSize(window, w, h); }
+void window_size(int w, int h) {
+  g_graphics->pos.w = w;
+  g_graphics->pos.h = h;
+  SDL_SetWindowSize(window, w, h);
+}
 
 struct plot **graphics_plots_init(struct graphics *graphics) {
   struct plot **plots = malloc(sizeof(struct plot *) * PLOTS_COUNT);

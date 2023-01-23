@@ -25,22 +25,27 @@
 
 static inline void draw(void);
 static inline void draw_background(SDL_Color color);
-static inline void draw_red_line_plot(struct plot *plot);
-static inline void draw_plot_data(struct plot *plot);
+static inline void draw_red_line_plot(struct plot *plot, char const *info,
+                                      SDL_Point dpos);
+static inline void draw_plot_data(struct plot *plot, SDL_Point dpos);
 static inline void draw_plots(void);
 static inline void draw_fps(void);
 static inline void draw_rchannels(struct vec_rchannel *vec);
 static inline void draw_schannels(struct vec_schannel *vec);
 static inline void draw_line_channel_delim(void);
 static inline void draw_coinf(struct coinf *coinf);
-static inline void draw_red_line_plot_nodata(struct plot *plot);
 
 static inline void draw_background(SDL_Color color) {
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   SDL_RenderClear(renderer);
 }
 
-static inline void draw_red_line_plot(struct plot *plot) {
+static inline void draw_red_line_plot(struct plot *plot, char const *info,
+                                      SDL_Point dpos) {
+  SDL_Rect plot_dpos = (SDL_Rect){.x = dpos.x + plot->position.x,
+                                  .y = dpos.y + plot->position.y,
+                                  .w = plot->position.w,
+                                  .h = plot->position.h};
   float const x0 = plot->fft.x0;
   float const start_x = 0;
   float const mid_y = x0 + (float)plot->position.h / 2;
@@ -48,16 +53,16 @@ static inline void draw_red_line_plot(struct plot *plot) {
   float const end_start_x = start_x + plot->position.w;
   float const mid_dy = mid_y + 40;
   SDL_SetRenderDrawColor(renderer, 0xDF, 0x40, 0x53, 0xFF);
-  SDL_RenderSetViewport(renderer, &plot->position);
+  SDL_RenderSetViewport(renderer, &plot_dpos);
   SDL_RenderDrawLineF(renderer, start_x, mid_dy, end_start_x, mid_dy);
 
   float const mx = g_graphics->mouse.x;
   float const my = g_graphics->mouse.y;
-  float const ph = plot->position.h + plot->position.y;
-  float const pw = plot->position.w + plot->position.x;
+  float const ph = plot->position.h + plot_dpos.y;
+  float const pw = plot->position.w + plot_dpos.x;
 
-  if (mx >= plot->position.x && my >= plot->position.y && mx < pw && my < ph) {
-    struct coinf *coinf = coinf_init_text((SDL_Point){mx, my}, "channel off");
+  if (mx >= plot_dpos.x && my >= plot_dpos.y && mx < pw && my < ph) {
+    struct coinf *coinf = coinf_init_text((SDL_Point){mx, my}, info);
     draw_coinf(coinf);
     coinf_free(coinf);
   }
@@ -65,38 +70,13 @@ static inline void draw_red_line_plot(struct plot *plot) {
   SDL_RenderSetViewport(renderer, &g_graphics->pos);
 }
 
-static inline void draw_red_line_plot_nodata(struct plot *plot) {
-  float const x0 = plot->fft.x0;
-  float const start_x = 0;
-  float const mid_y = x0 + (float)plot->position.h / 2;
-
-  float const end_start_x = start_x + plot->position.w;
-  float const mid_dy = mid_y + 40;
-  SDL_SetRenderDrawColor(renderer, 0xDF, 0x40, 0x53, 0xFF);
-  SDL_RenderSetViewport(renderer, &plot->position);
-  SDL_RenderDrawLineF(renderer, start_x, mid_dy, end_start_x, mid_dy);
-
-  float const mx = g_graphics->mouse.x;
-  float const my = g_graphics->mouse.y;
-  float const ph = plot->position.h + plot->position.y;
-  float const pw = plot->position.w + plot->position.x;
-
-  if (mx >= plot->position.x && my >= plot->position.y && mx < pw && my < ph) {
-    struct coinf *coinf = coinf_init_text((SDL_Point){mx, my}, "no data");
-    draw_coinf(coinf);
-    coinf_free(coinf);
-  }
-
-  SDL_RenderSetViewport(renderer, &g_graphics->pos);
-}
-
-static inline void draw_plot_data(struct plot *plot) {
+static inline void draw_plot_data(struct plot *plot, SDL_Point dpos) {
   if (check_zero_array(plot->fft.data, plot->fft.length)) {
-    draw_red_line_plot_nodata(plot);
+    draw_red_line_plot(plot, "no data", dpos);
     return;
   }
 
-  float const dx = plot->fft.dx;
+  float const dx = fabs(plot->fft.dx);
   float const x0 = plot->fft.x0;
   /* float const start_x = plot->position.x; */
   float const start_x = 0;
@@ -110,9 +90,10 @@ static inline void draw_plot_data(struct plot *plot) {
   SDL_RenderSetViewport(renderer, &plot->position);
   SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
   for (size_t j = 0; j < fft_length; ++j) {
-    float const *fft = plot->fft.data;
+    SDL_FPoint const *fft = plot->fft.data;
+    plot->fft.data->x = prev.x;
 
-    next.y = fft[j] + mid_y;
+    next.y = fft[j].y + mid_y;
     SDL_RenderDrawLineF(renderer, prev.x, prev.y, next.x, next.y);
     next.x += dx;
     prev.x = next.x;
@@ -125,17 +106,11 @@ static inline void draw_plot_data(struct plot *plot) {
 
     if (mx >= plot->position.x && my >= plot->position.y && mx < pw &&
         my < ph) {
-      float ppx = prev.x;
-      float ppy = prev.y;
-      int rmx, rmy;
-      SDL_GetRelativeMouseState(&rmx, &rmy);
-      printf("rmx = %d rmy = %d ppx = %f ppy = %f\n", rmx, rmy, ppx, ppy);
-      if (rmx == (int)ppx && rmy == (int)ppy) {
-        struct coinf *coinf = coinf_init((SDL_Point){ppx, ppy}, prev.x, fft[j]);
+      if (mx == prev.x && my == prev.y) {
+        struct coinf *coinf = coinf_init_coord(
+            (SDL_Point){mx, my}, plot->fft.data->x, plot->fft.data->y);
         draw_coinf(coinf);
         coinf_free(coinf);
-        SDL_RenderSetViewport(renderer, &plot->position);
-        SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
       }
     }
   }
@@ -148,24 +123,28 @@ static inline void draw_plots(void) {
   size_t idx = 0;
   for (size_t i = 0; i < g_graphics->service->count; ++i) {
     if (!g_graphics->service->schs[i]->state) {
-      draw_red_line_plot(plots[idx]);
-      draw_red_line_plot(plots[idx + 1]);
+      draw_red_line_plot(plots[idx], "channel off",
+                         g_graphics->service->schs[i]->dpos);
+      draw_red_line_plot(plots[idx + 1], "channel off",
+                         g_graphics->service->schs[i]->dpos);
       idx += 2;
     } else {
-      draw_plot_data(plots[idx]);
-      draw_plot_data(plots[idx + 1]);
+      draw_plot_data(plots[idx], g_graphics->service->schs[i]->dpos);
+      draw_plot_data(plots[idx + 1], g_graphics->service->schs[i]->dpos);
       idx += 2;
     }
   }
 
   for (size_t i = 0; i < g_graphics->relay->count; ++i) {
     if (!g_graphics->relay->rchs[i]->state) {
-      draw_red_line_plot(plots[idx]);
-      draw_red_line_plot(plots[idx + 1]);
+      draw_red_line_plot(plots[idx], "channel off",
+                         g_graphics->relay->rchs[i]->dpos);
+      draw_red_line_plot(plots[idx + 1], "channel off",
+                         g_graphics->relay->rchs[i]->dpos);
       idx += 2;
     } else {
-      draw_plot_data(plots[idx]);
-      draw_plot_data(plots[idx + 1]);
+      draw_plot_data(plots[idx], g_graphics->relay->rchs[i]->dpos);
+      draw_plot_data(plots[idx + 1], g_graphics->relay->rchs[i]->dpos);
       idx += 2;
     }
   }
@@ -190,15 +169,43 @@ static inline void draw_schannels(struct vec_schannel *vec) {
     struct schannel *sch = vec->schs[i];
 
     // draw back
-    DRAW_IN_REN(sch->plot0->background, &sch->plot0->position);
-    DRAW_IN_REN(sch->plot1->background, &sch->plot1->position);
+    SDL_Rect pos_plot0 = sch->plot0->position;
+    SDL_Rect dpos_plot0 = (SDL_Rect){.x = pos_plot0.x + sch->dpos.x,
+                                     .y = pos_plot0.y + sch->dpos.y,
+                                     .w = pos_plot0.w,
+                                     .h = pos_plot0.h};
+
+    DRAW_IN_REN(sch->plot0->background, &dpos_plot0);
+
+    SDL_Rect pos_plot1 = sch->plot1->position;
+    SDL_Rect dpos_plot1 = (SDL_Rect){.x = pos_plot1.x + sch->dpos.x,
+                                     .y = pos_plot1.y + sch->dpos.y,
+                                     .w = pos_plot1.w,
+                                     .h = pos_plot1.h};
+    DRAW_IN_REN(sch->plot1->background, &dpos_plot1);
 
     // draw name
-    DRAW_IN_REN(sch->plot0->name->texture, &sch->plot0->name->position);
-    DRAW_IN_REN(sch->plot1->name->texture, &sch->plot1->name->position);
+    SDL_Rect pos_plot0_name = sch->plot0->name->position;
+    SDL_Rect dpos_plot0_name = (SDL_Rect){.x = pos_plot0_name.x + sch->dpos.x,
+                                          .y = pos_plot0_name.y + sch->dpos.y,
+                                          .w = pos_plot0_name.w,
+                                          .h = pos_plot0_name.h};
+    DRAW_IN_REN(sch->plot0->name->texture, &dpos_plot0_name);
+
+    SDL_Rect pos_plot1_name = sch->plot1->name->position;
+    SDL_Rect dpos_plot1_name = (SDL_Rect){.x = pos_plot1_name.x + sch->dpos.x,
+                                          .y = pos_plot1_name.y + sch->dpos.y,
+                                          .w = pos_plot1_name.w,
+                                          .h = pos_plot1_name.h};
+    DRAW_IN_REN(sch->plot1->name->texture, &dpos_plot1_name);
 
     // draw channels number
-    DRAW_IN_REN(sch->number->texture, &sch->number->position);
+    SDL_Rect pos_num = sch->number->position;
+    SDL_Rect dpos_num = (SDL_Rect){.x = pos_num.x + sch->dpos.x,
+                                   .y = pos_num.y + sch->dpos.y,
+                                   .w = pos_num.w,
+                                   .h = pos_num.h};
+    DRAW_IN_REN(sch->number->texture, &dpos_num);
   }
 }
 
@@ -208,15 +215,42 @@ static inline void draw_rchannels(struct vec_rchannel *vec) {
     struct rchannel *rch = vec->rchs[i];
 
     // draw back
-    DRAW_IN_REN(rch->plot0->background, &rch->plot0->position);
-    DRAW_IN_REN(rch->plot1->background, &rch->plot1->position);
+    SDL_Rect pos_plot0 = rch->plot0->position;
+    SDL_Rect dpos_plot0 = (SDL_Rect){.x = pos_plot0.x + rch->dpos.x,
+                                     .y = pos_plot0.y + rch->dpos.y,
+                                     .w = pos_plot0.w,
+                                     .h = pos_plot0.h};
+    DRAW_IN_REN(rch->plot0->background, &dpos_plot0);
+
+    SDL_Rect pos_plot1 = rch->plot1->position;
+    SDL_Rect dpos_plot1 = (SDL_Rect){.x = pos_plot1.x + rch->dpos.x,
+                                     .y = pos_plot1.y + rch->dpos.y,
+                                     .w = pos_plot1.w,
+                                     .h = pos_plot1.h};
+    DRAW_IN_REN(rch->plot1->background, &dpos_plot1);
 
     // draw name
-    DRAW_IN_REN(rch->plot0->name->texture, &rch->plot0->name->position);
-    DRAW_IN_REN(rch->plot1->name->texture, &rch->plot1->name->position);
+    SDL_Rect pos_plot0_name = rch->plot0->name->position;
+    SDL_Rect dpos_plot0_name = (SDL_Rect){.x = pos_plot0_name.x + rch->dpos.x,
+                                          .y = pos_plot0_name.y + rch->dpos.y,
+                                          .w = pos_plot0_name.w,
+                                          .h = pos_plot0_name.h};
+    DRAW_IN_REN(rch->plot0->name->texture, &dpos_plot0_name);
+
+    SDL_Rect pos_plot1_name = rch->plot1->name->position;
+    SDL_Rect dpos_plot1_name = (SDL_Rect){.x = pos_plot1_name.x + rch->dpos.x,
+                                          .y = pos_plot1_name.y + rch->dpos.y,
+                                          .w = pos_plot1_name.w,
+                                          .h = pos_plot1_name.h};
+    DRAW_IN_REN(rch->plot1->name->texture, &dpos_plot1_name);
 
     // draw channels number
-    DRAW_IN_REN(rch->number.texture, &rch->number.position);
+    SDL_Rect pos_num = rch->number.position;
+    SDL_Rect dpos_num = (SDL_Rect){.x = pos_num.x + rch->dpos.x,
+                                   .y = pos_num.y + rch->dpos.y,
+                                   .w = pos_num.w,
+                                   .h = pos_num.h};
+    DRAW_IN_REN(rch->number.texture, &dpos_num);
   }
 }
 

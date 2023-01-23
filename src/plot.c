@@ -3,6 +3,7 @@
 #include "comfun.h"
 #include "global.h"
 #include "text.h"
+#include <SDL2/SDL_rect.h>
 
 char const plot_background_png[] = "res/plot_back.png";
 
@@ -30,7 +31,7 @@ struct plot *plot_init(SDL_Point position, char const *name) {
   new_plot->fft.dx = 0.0f;
   new_plot->fft.x0 = 0.0f;
   new_plot->fft.length = 0;
-  new_plot->fft.data = malloc(sizeof(float) * 1);
+  new_plot->fft.data = malloc(sizeof(SDL_FPoint));
 
   int32_t const plot_size_name = 20;
   SDL_Point pos_name = {.x = position.x + 9, .y = position.y - 11};
@@ -61,10 +62,10 @@ void plot_free(struct plot *plot) {
 void plot_fft_update(struct plot *plot, float *data, int length, float dx,
                      float x0) {
   free(plot->fft.data);
-  plot->fft.data = malloc(sizeof *data * length);
+  plot->fft.data = malloc(sizeof(SDL_FPoint) * length);
 
   for (int i = 0; i < length; ++i) {
-    plot->fft.data[length - 1 - i] = data[i];
+    plot->fft.data[length - 1 - i].y = data[i];
   }
 
   plot->fft.length = length;

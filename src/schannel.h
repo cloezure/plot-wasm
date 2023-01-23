@@ -7,6 +7,7 @@
 
 struct schannel {
   SDL_Point position;
+  SDL_Point dpos;
   bool state;
   struct plot *plot0;
   struct plot *plot1;

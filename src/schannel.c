@@ -2,6 +2,7 @@
 #include "colorscheme.h"
 #include "comfun.h"
 #include "text.h"
+#include <SDL2/SDL_rect.h>
 
 struct schannel *schannel_init(SDL_Point position, int32_t channel_number,
                                char const *plot0_name, char const *plot1_name) {
@@ -24,6 +25,8 @@ struct schannel *schannel_init(SDL_Point position, int32_t channel_number,
   schannel->number = text_init(
       text_get_font_type(TEXT_FONT_BOLD), 150, COLOR_CHANNEL_NUMBER_ON,
       (SDL_Point){.x = pos_num.x, .y = pos_num.y}, channel_number_s);
+
+  schannel->dpos = (SDL_Point){0, 0};
 
   return schannel;
 }

@@ -1,9 +1,11 @@
 #pragma once
 #include "SDL2/SDL.h"
+#include <SDL2/SDL_rect.h>
 #include <stdbool.h>
 
 struct rchannel {
   SDL_Point position;
+  SDL_Point dpos;
   struct plot *plot0;
   struct plot *plot1;
   bool state;

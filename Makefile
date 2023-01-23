@@ -4,7 +4,7 @@ TARGET := plot
 OUT := 0
 WEB := 1
 # project type
-MODE := $(OUT)
+MODE := $(WEB)
 ifeq ($(MODE), $(WEB))
 PROJECT_TYPE := "WEB"
 else
@@ -52,6 +52,7 @@ override CFLAGS += -std=c17\
 				-Wextra\
 				-pedantic\
 				-O2\
+				-g3\
 				-lSDL2\
 				-lSDL2_ttf\
 				-lSDL2_image
