@@ -1,0 +1,6 @@
+#+title: Do
+
+* TODO [0%]
+- [ ] 7 delenii po 13 Dbl snizy 0 v seredine po Mgz
+- [ ] naiti bag na off_channel
+- [ ] dodelat print x,y dots
