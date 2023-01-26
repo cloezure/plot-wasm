@@ -27,12 +27,12 @@ void off_channel(int channel_idx);
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void window_size(int w, int h);
+int plot_enter(void);
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void change_position_channel(int channel_idx, int x, int y);
+void off_draw(void);
 
 struct graphics {
   SDL_Rect pos;

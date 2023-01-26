@@ -4,6 +4,7 @@
 #include "global.h"
 #include "text.h"
 #include <SDL2/SDL_rect.h>
+#include <assert.h>
 
 char const plot_background_png[] = "res/plot_back.png";
 
@@ -44,10 +45,7 @@ struct plot *plot_init(SDL_Point position, char const *name) {
 }
 
 void plot_free(struct plot *plot) {
-  if (plot == NULL) {
-    printf("plot == NULL");
-    return;
-  }
+  assert(plot);
 
   SDL_DestroyTexture(plot->background);
   plot->background = NULL;
@@ -56,7 +54,6 @@ void plot_free(struct plot *plot) {
   text_free(plot->name);
 
   free(plot);
-  plot = NULL;
 }
 
 void plot_fft_update(struct plot *plot, float *data, int length, float dx,

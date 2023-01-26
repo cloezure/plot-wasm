@@ -18,26 +18,28 @@ static inline size_t index_plot_switch(size_t idx);
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void set_fps(int fps) {
-  if (fps <= 0)
-    return;
+int plot_enter(void) { return 0; }
 
-  g_graphics->fps = fps;
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+void off_draw(void) {
+  off_channel(0);
+  off_channel(1);
+  off_channel(2);
+  off_channel(3);
+  off_channel(4);
+  off_channel(5);
 }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void change_position_channel(int channel_idx, int x, int y) {
-  if (channel_idx < 0 || channel_idx >= PLOTS_COUNT / 2)
+void set_fps(int fps) {
+  if (fps <= 0)
     return;
 
-  int const serv_count = g_graphics->service->count - 1;
-  if (channel_idx <= serv_count) {
-    g_graphics->service->schs[channel_idx]->dpos = (SDL_Point){x, y};
-  } else {
-    g_graphics->relay->rchs[channel_idx - 4]->dpos = (SDL_Point){x, y};
-  }
+  g_graphics->fps = fps;
 }
 
 #ifdef __EMSCRIPTEN__
@@ -53,15 +55,6 @@ void push_plot_data(int plot_idx, float *data, int length, float dx, float x0) {
   plot_fft_update(plots[plot_idx], data, length, dx / (100000000 - 25000000),
                   x0 / 10000);
   graphics_plots_free(plots);
-}
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-void window_size(int w, int h) {
-  g_graphics->pos.w = w;
-  g_graphics->pos.h = h;
-  SDL_SetWindowSize(window, w, h);
 }
 
 struct plot **graphics_plots_init(struct graphics *graphics) {
@@ -153,11 +146,11 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
 }
 
 void graphics_free(struct graphics *graphics) {
+  assert(graphics);
   vec_schannel_free(graphics->service);
   vec_rchannel_free(graphics->relay);
 
   free(graphics);
-  graphics = NULL;
 
   SDL_DestroyRenderer(renderer);
   renderer = NULL;

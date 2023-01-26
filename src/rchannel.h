@@ -5,7 +5,6 @@
 
 struct rchannel {
   SDL_Point position;
-  SDL_Point dpos;
   struct plot *plot0;
   struct plot *plot1;
   bool state;

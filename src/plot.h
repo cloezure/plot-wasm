@@ -1,4 +1,5 @@
 #pragma once
+#include "chart_points.h"
 #include "text.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
@@ -8,6 +9,11 @@ struct plot {
   SDL_Rect position;
   SDL_Texture *background;
   struct text *name;
+
+  // vertic MHz
+  /* struct chart_points *vp; */
+  // horiz dB
+  /* struct chart_points *hp; */
 
   struct {
     SDL_FPoint *data;

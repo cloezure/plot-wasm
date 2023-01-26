@@ -6,6 +6,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
+#include <assert.h>
 
 char const relay_number_1_off[] = "res/rim_1_off.png";
 char const relay_number_2_off[] = "res/rim_2_off.png";
@@ -38,7 +39,6 @@ static inline bool rchannel_init_number(struct rchannel *rchannel,
   rchannel->number.value = channel_number;
   rchannel->number.position.w = sur_num->w;
   rchannel->number.position.h = sur_num->h;
-  rchannel->dpos = (SDL_Point){0, 0};
 
   SDL_FreeSurface(sur_num);
   return ok;
@@ -68,15 +68,12 @@ struct rchannel *rchannel_init(SDL_Point position, int32_t channel_number,
 }
 
 void rchannel_free(struct rchannel *rchannel) {
-  if (rchannel == NULL) {
-    return;
-  }
+  assert(rchannel);
 
   plot_free(rchannel->plot0);
   plot_free(rchannel->plot1);
   SDL_DestroyTexture(rchannel->number.texture);
   free(rchannel);
-  rchannel = NULL;
 }
 
 static inline char const *get_relay_num(size_t num) {
@@ -115,9 +112,9 @@ struct vec_rchannel *vec_rchannel_init(size_t count, SDL_Point position) {
 }
 
 void vec_rchannel_free(struct vec_rchannel *vec) {
+  assert(vec);
+
   for (size_t i = 0; i < vec->count; ++i) {
-    if (vec->rchs[i] == NULL)
-      continue;
     rchannel_free(vec->rchs[i]);
     vec->rchs[i] = NULL;
   }
@@ -126,7 +123,6 @@ void vec_rchannel_free(struct vec_rchannel *vec) {
   vec->rchs = NULL;
 
   free(vec);
-  vec = NULL;
 }
 
 void off_rchannel(struct vec_rchannel *vec, int rch_idx) {

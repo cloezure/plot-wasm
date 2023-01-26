@@ -4,6 +4,7 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_ttf.h>
+#include <assert.h>
 #include <string.h>
 
 static inline void text_content_update(struct text *text, char const *content);
@@ -53,9 +54,7 @@ struct text *text_init(char const *font_path, int32_t font_size,
 }
 
 void text_free(struct text *text) {
-  if (text == NULL) {
-    return;
-  }
+  assert(text);
 
   TTF_CloseFont(text->font);
   text->font = NULL;
@@ -67,7 +66,6 @@ void text_free(struct text *text) {
   text->content = NULL;
 
   free(text);
-  text = NULL;
 }
 
 void text_change_content(struct text *text, char const *content) {
@@ -100,7 +98,7 @@ void text_change_color(struct text *text, SDL_Color color) {
     return;
   }
 
-  SDL_Surface *sur = TTF_RenderText_Solid(text->font, text->content, color);
+  SDL_Surface *sur = TTF_RenderText_Blended(text->font, text->content, color);
 
   if (sur == NULL) {
     display_error_sdl("surface in text could not be init");

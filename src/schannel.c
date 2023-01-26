@@ -3,6 +3,7 @@
 #include "comfun.h"
 #include "text.h"
 #include <SDL2/SDL_rect.h>
+#include <assert.h>
 
 struct schannel *schannel_init(SDL_Point position, int32_t channel_number,
                                char const *plot0_name, char const *plot1_name) {
@@ -26,15 +27,11 @@ struct schannel *schannel_init(SDL_Point position, int32_t channel_number,
       text_get_font_type(TEXT_FONT_BOLD), 150, COLOR_CHANNEL_NUMBER_ON,
       (SDL_Point){.x = pos_num.x, .y = pos_num.y}, channel_number_s);
 
-  schannel->dpos = (SDL_Point){0, 0};
-
   return schannel;
 }
 
 void schannel_free(struct schannel *schannel) {
-  if (schannel == NULL) {
-    return;
-  }
+  assert(schannel);
 
   plot_free(schannel->plot0);
   plot_free(schannel->plot1);
@@ -64,9 +61,9 @@ struct vec_schannel *vec_schannel_init(size_t count, SDL_Point position) {
 }
 
 void vec_schannel_free(struct vec_schannel *vec) {
+  assert(vec);
+
   for (size_t i = 0; i < vec->count; ++i) {
-    if (vec->schs[i] == NULL)
-      continue;
     schannel_free(vec->schs[i]);
     vec->schs[i] = NULL;
   }
@@ -75,7 +72,6 @@ void vec_schannel_free(struct vec_schannel *vec) {
   vec->schs = NULL;
 
   free(vec);
-  vec = NULL;
 }
 
 void off_schannel(struct vec_schannel *vec, int sch_idx) {

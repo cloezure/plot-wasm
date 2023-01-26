@@ -2,6 +2,7 @@
 #include "colorscheme.h"
 #include "text.h"
 #include <SDL2/SDL_rect.h>
+#include <assert.h>
 
 struct coinf *coinf_init_coord(SDL_Point pos, float x, float y) {
   struct coinf *info = malloc(sizeof *info);
@@ -26,7 +27,7 @@ struct coinf *coinf_init_text(SDL_Point pos, char const *text) {
 }
 
 void coinf_free(struct coinf *coinf) {
+  assert(coinf);
   text_free(coinf->inf_txt);
   free(coinf);
-  coinf = NULL;
 }

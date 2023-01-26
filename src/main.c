@@ -9,11 +9,13 @@
 #include "draw.h"
 #include "global.h"
 #include "graphics.h"
+#include "locale.h"
 
 #define VERSION 1.4 +
 #define AUTHORS NOTIDMAN
 
 int main(void) {
+  setlocale(LC_ALL, "");
   int32_t const w = 1308;
   int32_t const h = 734;
   int32_t const fps_draw = 60;
