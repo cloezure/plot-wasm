@@ -34,12 +34,18 @@ EMSCRIPTEN_KEEPALIVE
 #endif
 void off_draw(void);
 
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+void change_locale(int locale);
+
 struct graphics {
   SDL_Rect pos;
   SDL_Point mouse;
   int32_t width_mid;
   int32_t height_mid;
   int32_t fps;
+  int lang;
 
   struct vec_rchannel *relay;
   struct vec_schannel *service;

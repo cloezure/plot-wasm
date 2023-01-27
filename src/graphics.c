@@ -2,6 +2,7 @@
 #include "colorscheme.h"
 #include "comfun.h"
 #include "global.h"
+#include "lang.h"
 #include "parse.h"
 #include "plot.h"
 #include "rchannel.h"
@@ -12,6 +13,7 @@
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_ttf.h>
 #include <assert.h>
+#include <string.h>
 
 static inline size_t index_plot_switch(size_t idx);
 
@@ -24,13 +26,15 @@ int plot_enter(void) { return 0; }
 EMSCRIPTEN_KEEPALIVE
 #endif
 void off_draw(void) {
-  off_channel(0);
-  off_channel(1);
-  off_channel(2);
-  off_channel(3);
-  off_channel(4);
-  off_channel(5);
+  for (size_t i = 0; i < CHANNELS_COUNT; ++i) {
+    off_channel(i);
+  }
 }
+
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+void change_locale(int local) { g_graphics->lang = local; }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -82,7 +86,7 @@ void graphics_plots_free(struct plot **plots) { free(plots); }
 EMSCRIPTEN_KEEPALIVE
 #endif
 void off_channel(int channel_idx) {
-  if (channel_idx < 0 || channel_idx >= PLOTS_COUNT / 2)
+  if (channel_idx < 0 || channel_idx >= CHANNELS_COUNT)
     return;
 
   int const serv_count = g_graphics->service->count - 1;
@@ -101,6 +105,7 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->height_mid = height / 2;
   new_graphics->fps = fps;
   new_graphics->mouse = (SDL_Point){0, 0};
+  new_graphics->lang = LOCAL_LANG_EN;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     display_error_sdl("sdl could not init");

@@ -4,6 +4,7 @@
 #include "comfun.h"
 #include "global.h"
 #include "graphics.h"
+#include "lang.h"
 #include "parse.h"
 #include "plot.h"
 #include "rchannel.h"
@@ -25,35 +26,35 @@
 
 static inline void draw(void);
 static inline void draw_background(SDL_Color color);
-static inline void draw_red_line_plot(struct plot *plot, char const *info);
 static inline void draw_plot_data(struct plot *plot);
 static inline void draw_plots(void);
 static inline void draw_fps(void);
 static inline void draw_rchannels(struct vec_rchannel *vec);
 static inline void draw_schannels(struct vec_schannel *vec);
 static inline void draw_line_channel_delim(void);
-static inline void draw_coinf(struct coinf *coinf);
-static inline void draw_in_plot_info(struct plot *plot, char const *info);
+static inline void draw_coinf16(struct coinf16 *coinf);
+static inline void draw_red_line_plot(struct plot *plot, char16_t const *info);
+static inline void draw_in_plot_info(struct plot *plot, char16_t const *info);
 
 static inline void draw_background(SDL_Color color) {
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   SDL_RenderClear(renderer);
 }
 
-static inline void draw_in_plot_info(struct plot *plot, char const *info) {
+static inline void draw_in_plot_info(struct plot *plot, char16_t const *info) {
   float const mx = g_graphics->mouse.x;
   float const my = g_graphics->mouse.y;
   float const ph = plot->position.h + plot->position.y;
   float const pw = plot->position.w + plot->position.x;
 
   if (mx >= plot->position.x && my >= plot->position.y && mx < pw && my < ph) {
-    struct coinf *coinf = coinf_init_text((SDL_Point){mx, my}, info);
-    draw_coinf(coinf);
-    coinf_free(coinf);
+    struct coinf16 *coinf = coinf16_init_text((SDL_Point){mx, my}, info);
+    draw_coinf16(coinf);
+    coinf16_free(coinf);
   }
 }
 
-static inline void draw_red_line_plot(struct plot *plot, char const *info) {
+static inline void draw_red_line_plot(struct plot *plot, char16_t const *info) {
   SDL_Rect const plot_pos = plot->position;
   float const x0 = plot->fft.x0;
   float const start_x = 0;
@@ -105,8 +106,10 @@ static inline void draw_red_line_plot(struct plot *plot, char const *info) {
 /* } */
 
 static inline void draw_plot_data(struct plot *plot) {
+  struct lang *lang = lang_now(g_graphics);
   if (check_zero_array(plot->fft.data, plot->fft.length)) {
-    draw_red_line_plot(plot, "no data");
+    draw_red_line_plot(plot, lang->info[NO_DATA]);
+    lang_free(lang);
     return;
   }
 
@@ -131,18 +134,21 @@ static inline void draw_plot_data(struct plot *plot) {
     prev.x = next.x;
     prev.y = next.y;
   }
-  draw_in_plot_info(plot, "click to open");
+
+  /* draw_in_plot_info(plot, lang->info[CLICK_TO_OPEN]); */
 
   SDL_RenderSetViewport(renderer, &g_graphics->pos);
+  lang_free(lang);
 }
 
 static inline void draw_plots(void) {
   struct plot **plots = graphics_plots_init(g_graphics);
+  struct lang *lang = lang_now(g_graphics);
   size_t idx = 0;
   for (size_t i = 0; i < g_graphics->service->count; ++i) {
     if (!g_graphics->service->schs[i]->state) {
-      draw_red_line_plot(plots[idx], "channel off");
-      draw_red_line_plot(plots[idx + 1], "channel off");
+      draw_red_line_plot(plots[idx], lang->info[CHANNEL_OFF]);
+      draw_red_line_plot(plots[idx + 1], lang->info[CHANNEL_OFF]);
       idx += 2;
     } else {
       draw_plot_data(plots[idx]);
@@ -153,8 +159,8 @@ static inline void draw_plots(void) {
 
   for (size_t i = 0; i < g_graphics->relay->count; ++i) {
     if (!g_graphics->relay->rchs[i]->state) {
-      draw_red_line_plot(plots[idx], "channel off");
-      draw_red_line_plot(plots[idx + 1], "channel off");
+      draw_red_line_plot(plots[idx], lang->info[CHANNEL_OFF]);
+      draw_red_line_plot(plots[idx + 1], lang->info[CHANNEL_OFF]);
       idx += 2;
     } else {
       draw_plot_data(plots[idx]);
@@ -163,6 +169,7 @@ static inline void draw_plots(void) {
     }
   }
   graphics_plots_free(plots);
+  lang_free(lang);
 }
 
 static inline void draw_fps(void) {
@@ -170,12 +177,12 @@ static inline void draw_fps(void) {
   char buff[100] = {0};
   sprintf(buff, "%d", g_graphics->fps);
 
-  struct text *fps =
-      text_init(text_get_font_type(TEXT_FONT_BOLD), 60, COLOR_GREEN, pos, buff);
+  struct text8 *fps = text8_init(text_get_font_type(TEXT_FONT_BOLD), 60,
+                                 COLOR_GREEN, pos, buff);
   fps->position.x = g_graphics->pos.w - fps->position.w - 10;
 
   DRAW_IN_REN(fps->texture, &fps->position);
-  text_free(fps);
+  text8_free(fps);
 }
 
 static inline void draw_schannels(struct vec_schannel *vec) {
@@ -219,7 +226,7 @@ static inline void draw_line_channel_delim(void) {
   SDL_RenderDrawRect(renderer, &rec);
 }
 
-static inline void draw_coinf(struct coinf *coinf) {
+static inline void draw_coinf16(struct coinf16 *coinf) {
   SDL_RenderSetViewport(renderer, &g_graphics->pos);
   SDL_SetRenderDrawColor(renderer, coinf->back.r, coinf->back.g, coinf->back.b,
                          coinf->back.a);
@@ -236,7 +243,6 @@ static inline void draw(void) {
   draw_line_channel_delim();
   /* draw_fps(); */
   draw_plots();
-  SDL_RenderPresent(renderer);
 }
 
 void handle_events(void) {
@@ -260,6 +266,7 @@ void handle_events(void) {
   }
 
   draw();
+  SDL_RenderPresent(renderer);
 
   frame_time = SDL_GetTicks() - frame_start;
 

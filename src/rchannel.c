@@ -45,7 +45,8 @@ static inline bool rchannel_init_number(struct rchannel *rchannel,
 }
 
 struct rchannel *rchannel_init(SDL_Point position, int32_t channel_number,
-                               char const *plot0_name, char const *plot1_name) {
+                               char16_t const *plot0_name,
+                               char16_t const *plot1_name) {
   struct rchannel *rchannel = malloc(sizeof *rchannel);
 
   SDL_Rect pos_num = {.x = position.x + 26, .y = position.y + 67};
@@ -98,7 +99,7 @@ struct vec_rchannel *vec_rchannel_init(size_t count, SDL_Point position) {
 
   SDL_Point dpos = position;
   for (size_t i = 0; i < count; ++i) {
-    vec->rchs[i] = rchannel_init(dpos, i, "Tx", "Rx");
+    vec->rchs[i] = rchannel_init(dpos, i, u"Tx", u"Rx");
 
     if (!is_even(i)) {
       dpos.y += 244;

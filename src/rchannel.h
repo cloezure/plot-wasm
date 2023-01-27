@@ -2,6 +2,7 @@
 #include "SDL2/SDL.h"
 #include <SDL2/SDL_rect.h>
 #include <stdbool.h>
+#include <uchar.h>
 
 struct rchannel {
   SDL_Point position;
@@ -17,8 +18,8 @@ struct rchannel {
 };
 
 struct rchannel *rchannel_init(SDL_Point position, int32_t channel_number,
-                               char const *plot0_name, char const *plot1_name);
-
+                               char16_t const *plot0_name,
+                               char16_t const *plot1_name);
 void rchannel_free(struct rchannel *rchannel);
 
 struct vec_rchannel {

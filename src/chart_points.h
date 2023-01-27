@@ -8,15 +8,14 @@ enum CHARTS_MODS {
 };
 
 struct chart_points {
-  struct text **points;
+  struct text8 **points;
   int32_t *charts_nums;
   size_t len;
 
-  struct text *unit;
+  struct text16 *unit;
 };
 
-struct chart_points *chart_points_init(char const *unit, SDL_Point pos_unit,
-                                       int32_t *charts, size_t len,
-                                       SDL_Point pos_chart,
-                                       enum CHARTS_MODS charts_mods);
+struct chart_points *chart_points_init(char16_t const *unit, int32_t *charts,
+                                       size_t len, SDL_Point pos_chart,
+                                       enum CHARTS_MODS charts_mod);
 void chart_points_free(struct chart_points *chart_points);

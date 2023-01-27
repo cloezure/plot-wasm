@@ -9,7 +9,7 @@ struct schannel {
   SDL_Point position;
   struct plot *plot0;
   struct plot *plot1;
-  struct text *number;
+  struct text8 *number;
   bool state;
 };
 
@@ -19,7 +19,8 @@ struct vec_schannel {
 };
 
 struct schannel *schannel_init(SDL_Point position, int32_t channel_number,
-                               char const *plot0_name, char const *plot1_name);
+                               char16_t const *plot0_name,
+                               char16_t const *plot1_name);
 void schannel_free(struct schannel *schannel);
 
 struct vec_schannel *vec_schannel_init(size_t count, SDL_Point position);

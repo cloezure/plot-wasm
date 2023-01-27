@@ -6,8 +6,10 @@
 #include <assert.h>
 
 struct schannel *schannel_init(SDL_Point position, int32_t channel_number,
-                               char const *plot0_name, char const *plot1_name) {
+                               char16_t const *plot0_name,
+                               char16_t const *plot1_name) {
   struct schannel *schannel = malloc(sizeof *schannel);
+
   SDL_Rect pos_num = {.x = position.x + 26, .y = position.y + 67};
 
   SDL_Point pos_plot0_body = {.x = 69 + 48 + pos_num.x, .y = pos_num.y - 25};
@@ -19,11 +21,11 @@ struct schannel *schannel_init(SDL_Point position, int32_t channel_number,
   schannel->plot1 = plot_init(pos_plot1_body, plot1_name);
   schannel->state = true;
 
-  char channel_number_s[50] = {'\0'};
+  char channel_number_s[50] = {u'\0'};
   sprintf(channel_number_s, "%d", channel_number);
 
   // body
-  schannel->number = text_init(
+  schannel->number = text8_init(
       text_get_font_type(TEXT_FONT_BOLD), 150, COLOR_CHANNEL_NUMBER_ON,
       (SDL_Point){.x = pos_num.x, .y = pos_num.y}, channel_number_s);
 
@@ -35,7 +37,7 @@ void schannel_free(struct schannel *schannel) {
 
   plot_free(schannel->plot0);
   plot_free(schannel->plot1);
-  text_free(schannel->number);
+  text8_free(schannel->number);
   free(schannel);
   schannel = NULL;
 }
@@ -47,7 +49,7 @@ struct vec_schannel *vec_schannel_init(size_t count, SDL_Point position) {
 
   SDL_Point dpos = position;
   for (size_t i = 0; i < count; ++i) {
-    vec->schs[i] = schannel_init(dpos, i + 1, "Tx", "Rx");
+    vec->schs[i] = schannel_init(dpos, i + 1, u"Tx", u"Rx");
 
     if (!is_even(i)) {
       dpos.y += 244;
@@ -80,5 +82,5 @@ void off_schannel(struct vec_schannel *vec, int sch_idx) {
     return;
   sch->state = false;
 
-  text_change_color(sch->number, COLOR_CHANNEL_NUMBER_OFF);
+  text8_change_color(sch->number, COLOR_CHANNEL_NUMBER_OFF);
 }

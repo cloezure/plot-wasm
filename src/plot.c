@@ -8,7 +8,7 @@
 
 char const plot_background_png[] = "res/plot_back.png";
 
-struct plot *plot_init(SDL_Point position, char const *name) {
+struct plot *plot_init(SDL_Point position, char16_t const *name) {
 
   SDL_Surface *sur = IMG_Load(plot_background_png);
   if (sur == NULL) {
@@ -36,8 +36,8 @@ struct plot *plot_init(SDL_Point position, char const *name) {
 
   int32_t const plot_size_name = 20;
   SDL_Point pos_name = {.x = position.x + 9, .y = position.y - 11};
-  new_plot->name = text_init(text_get_font_type(TEXT_FONT_BOLD), plot_size_name,
-                             COLOR_PLOT_NAME, pos_name, name);
+  new_plot->name = text16_init(text_get_font_type(TEXT_FONT_BOLD),
+                               plot_size_name, COLOR_PLOT_NAME, pos_name, name);
 
   SDL_FreeSurface(sur);
 
@@ -51,7 +51,7 @@ void plot_free(struct plot *plot) {
   plot->background = NULL;
 
   free(plot->fft.data);
-  text_free(plot->name);
+  text16_free(plot->name);
 
   free(plot);
 }

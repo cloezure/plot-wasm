@@ -15,7 +15,7 @@
 #define AUTHORS NOTIDMAN
 
 int main(void) {
-  setlocale(LC_ALL, "");
+  setlocale(LC_ALL, "Russian");
   int32_t const w = 1308;
   int32_t const h = 734;
   int32_t const fps_draw = 60;

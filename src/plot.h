@@ -8,7 +8,7 @@
 struct plot {
   SDL_Rect position;
   SDL_Texture *background;
-  struct text *name;
+  struct text16 *name;
 
   // vertic MHz
   /* struct chart_points *vp; */
@@ -23,7 +23,7 @@ struct plot {
   } fft;
 };
 
-struct plot *plot_init(SDL_Point position, char const *name);
+struct plot *plot_init(SDL_Point position, char16_t const *name);
 void plot_free(struct plot *plot);
 
 void plot_fft_update(struct plot *plot, float *data, int length, float dx,
