@@ -111,7 +111,7 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->height_mid = height / 2;
   new_graphics->fps = fps;
   new_graphics->mouse = (SDL_Point){0, 0};
-  new_graphics->lang = "EN";
+  new_graphics->lang = "ru";
   new_graphics->last_press = 0;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -119,10 +119,9 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-  window =
-      SDL_CreateWindow("Odas", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                       new_graphics->pos.w, new_graphics->pos.h,
-                       SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+  window = SDL_CreateWindow("Odas", SDL_WINDOWPOS_UNDEFINED,
+                            SDL_WINDOWPOS_UNDEFINED, new_graphics->pos.w,
+                            new_graphics->pos.h, SDL_WINDOW_SHOWN);
 
   if (window == NULL) {
     display_error_sdl("window could not be created");

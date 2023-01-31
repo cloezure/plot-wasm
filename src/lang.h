@@ -9,7 +9,7 @@ enum {
   CHANNEL_OFF = 2,
 };
 
-#define LANG_COUNT 3
+#define LANG_COUNT 5
 struct lang {
   char16_t **info;
 };

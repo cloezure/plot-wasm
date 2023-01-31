@@ -145,7 +145,7 @@ static inline void draw_plot_data(struct plot *plot) {
     prev.y = next.y;
   }
 
-  /* draw_in_plot_info(plot, lang->info[CLICK_TO_OPEN]); */
+  draw_in_plot_info(plot, lang->info[CLICK_TO_OPEN]);
   check_click(plot);
 
   SDL_RenderSetViewport(renderer, &g_graphics->pos);
@@ -280,7 +280,6 @@ void handle_events(void) {
   }
 
   draw();
-  printf("%d\n", g_graphics->last_press);
   click = false;
   SDL_RenderPresent(renderer);
   g_graphics->last_press = 0;

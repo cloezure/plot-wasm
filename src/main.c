@@ -11,7 +11,7 @@
 #include "graphics.h"
 #include "locale.h"
 
-#define VERSION 1.4 +
+#define VERSION 1.5 +
 #define AUTHORS NOTIDMAN
 
 int main(void) {

@@ -5,9 +5,9 @@
 #include <uchar.h>
 
 struct lang *lang_now(struct graphics *graphics) {
-  if (compare_str(graphics->lang, "RU")) {
+  if (compare_str(graphics->lang, "ru")) {
     return lang_ru();
-  } else if (compare_str(graphics->lang, "EN")) {
+  } else if (compare_str(graphics->lang, "en")) {
     return lang_en();
   } else {
     return lang_en();

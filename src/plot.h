@@ -9,6 +9,8 @@ struct plot {
   SDL_Rect position;
   SDL_Texture *background;
   struct text16 *name;
+  struct chart_points *vcharts;
+  struct chart_points *hcharts;
   int index;
 
   // vertic MHz

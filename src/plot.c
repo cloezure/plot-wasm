@@ -1,4 +1,5 @@
 #include "plot.h"
+#include "chart_points.h"
 #include "colorscheme.h"
 #include "comfun.h"
 #include "global.h"
@@ -40,6 +41,28 @@ struct plot *plot_init(SDL_Point position, char16_t const *name) {
   new_plot->name = text16_init(text_get_font_type(TEXT_FONT_BOLD),
                                plot_size_name, COLOR_PLOT_NAME, pos_name, name);
 
+  size_t hlpoints = 5;
+  int32_t hj = -27;
+  int32_t *hpoints = malloc(sizeof *hpoints * hlpoints);
+  for (size_t i = 0; i < hlpoints; ++i) {
+    hpoints[i] = hj;
+    hj += 7;
+  }
+  SDL_Point hcharts_pos = {.x = position.x, .y = position.y + sur->h};
+  new_plot->hcharts =
+      chart_points_init(u"MHz", hpoints, hlpoints, hcharts_pos, CHARTS_MODE_H);
+
+  size_t vlpoints = 5;
+  int32_t vj = 0;
+  int32_t *vpoints = malloc(sizeof *vpoints * vlpoints);
+  for (size_t i = 0; i < vlpoints; ++i) {
+    vpoints[i] = vj;
+    vj -= 7;
+  }
+  SDL_Point vcharts_pos = {.x = position.x - 20, .y = position.y};
+  new_plot->vcharts =
+      chart_points_init(u"GHz", vpoints, vlpoints, vcharts_pos, CHARTS_MODE_V);
+
   SDL_FreeSurface(sur);
 
   return new_plot;
@@ -53,6 +76,8 @@ void plot_free(struct plot *plot) {
 
   free(plot->fft.data);
   text16_free(plot->name);
+  chart_points_free(plot->hcharts);
+  chart_points_free(plot->vcharts);
 
   free(plot);
 }

@@ -1,4 +1,5 @@
 #include "schannel.h"
+#include "chart_points.h"
 #include "colorscheme.h"
 #include "comfun.h"
 #include "text.h"
