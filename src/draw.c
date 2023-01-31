@@ -36,6 +36,16 @@ static inline void draw_coinf16(struct coinf16 *coinf);
 static inline void draw_red_line_plot(struct plot *plot, char16_t const *info);
 static inline void draw_in_plot_info(struct plot *plot, char16_t const *info);
 
+SDL_Event event;
+bool click = false;
+
+static inline void check_click(struct plot *plot) {
+  if (click) {
+    g_graphics->last_press = plot->index;
+    click = false;
+  }
+}
+
 static inline void draw_background(SDL_Color color) {
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   SDL_RenderClear(renderer);
@@ -136,6 +146,7 @@ static inline void draw_plot_data(struct plot *plot) {
   }
 
   /* draw_in_plot_info(plot, lang->info[CLICK_TO_OPEN]); */
+  check_click(plot);
 
   SDL_RenderSetViewport(renderer, &g_graphics->pos);
   lang_free(lang);
@@ -255,18 +266,24 @@ void handle_events(void) {
 
   frame_start = SDL_GetTicks();
 
-  SDL_Event event;
   while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
       graphics_free(g_graphics);
       exit(EXIT_SUCCESS);
     } else if (event.type == SDL_MOUSEMOTION) {
       SDL_GetMouseState(&g_graphics->mouse.x, &g_graphics->mouse.y);
+    } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+      if (event.button.button == SDL_BUTTON_LEFT) {
+        click = true;
+      }
     }
   }
 
   draw();
+  printf("%d\n", g_graphics->last_press);
+  click = false;
   SDL_RenderPresent(renderer);
+  g_graphics->last_press = 0;
 
   frame_time = SDL_GetTicks() - frame_start;
 

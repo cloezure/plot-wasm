@@ -66,6 +66,14 @@ static inline int sprintf16_(char16_t *dest, size_t len, char16_t const *src,
   return 0;
 }
 
+static inline bool compare_str(char const *f, char const *s) {
+  for (; *f != '\0' || *s != '\0'; ++f, ++s) {
+    if (*f != *s)
+      return false;
+  }
+  return true;
+}
+
 /* printf("ch = %zu wch = %zu\n", sizeof(char16_t), sizeof(wchar_t)); \ */
 /* static_assert(sizeof(char16_t) != sizeof(wchar_t), "wchar_t != char16_t\n");
  * \ */

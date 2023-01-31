@@ -33,6 +33,7 @@ struct plot *plot_init(SDL_Point position, char16_t const *name) {
   new_plot->fft.x0 = 0.0f;
   new_plot->fft.length = 0;
   new_plot->fft.data = malloc(sizeof(SDL_FPoint));
+  new_plot->index = 0;
 
   int32_t const plot_size_name = 20;
   SDL_Point pos_name = {.x = position.x + 9, .y = position.y - 11};

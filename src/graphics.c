@@ -16,6 +16,7 @@
 #include <string.h>
 
 static inline size_t index_plot_switch(size_t idx);
+static inline void index_plots_set(struct plot **plots);
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -34,7 +35,7 @@ void off_draw(void) {
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void change_locale(int local) { g_graphics->lang = local; }
+void change_locale(char const *local) { g_graphics->lang = local; }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -45,6 +46,11 @@ void set_fps(int fps) {
 
   g_graphics->fps = fps;
 }
+
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+int last_press(void) { return g_graphics->last_press; }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -105,7 +111,8 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->height_mid = height / 2;
   new_graphics->fps = fps;
   new_graphics->mouse = (SDL_Point){0, 0};
-  new_graphics->lang = LOCAL_LANG_EN;
+  new_graphics->lang = "EN";
+  new_graphics->last_press = 0;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     display_error_sdl("sdl could not init");
@@ -147,6 +154,10 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->service = vec_schannel_init(4, (SDL_Point){.x = 0, .y = 0});
   new_graphics->relay = vec_rchannel_init(2, (SDL_Point){.x = 0, .y = 244 * 2});
 
+  struct plot **plots = graphics_plots_init(new_graphics);
+  index_plots_set(plots);
+  graphics_plots_free(plots);
+
   return new_graphics;
 }
 
@@ -165,6 +176,12 @@ void graphics_free(struct graphics *graphics) {
 
   TTF_Quit();
   SDL_Quit();
+}
+
+static inline void index_plots_set(struct plot **plots) {
+  for (size_t i = 1; i <= PLOTS_COUNT; ++i) {
+    plots[i - 1]->index = i;
+  }
 }
 
 static inline size_t index_plot_switch(size_t idx) {

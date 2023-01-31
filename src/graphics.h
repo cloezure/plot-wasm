@@ -37,7 +37,12 @@ void off_draw(void);
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void change_locale(int locale);
+void change_locale(char const *locale);
+
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+int last_press(void);
 
 struct graphics {
   SDL_Rect pos;
@@ -45,7 +50,8 @@ struct graphics {
   int32_t width_mid;
   int32_t height_mid;
   int32_t fps;
-  int lang;
+  char const *lang;
+  int last_press;
 
   struct vec_rchannel *relay;
   struct vec_schannel *service;

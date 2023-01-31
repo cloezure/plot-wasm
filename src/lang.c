@@ -5,12 +5,11 @@
 #include <uchar.h>
 
 struct lang *lang_now(struct graphics *graphics) {
-  switch (graphics->lang) {
-  case LOCAL_LANG_RU:
+  if (compare_str(graphics->lang, "RU")) {
     return lang_ru();
-  case LOCAL_LANG_EN:
-    return lang_ru();
-  default:
+  } else if (compare_str(graphics->lang, "EN")) {
+    return lang_en();
+  } else {
     return lang_en();
   }
 }
