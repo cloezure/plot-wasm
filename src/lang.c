@@ -4,16 +4,6 @@
 #include <string.h>
 #include <uchar.h>
 
-struct lang *lang_now(struct graphics *graphics) {
-  if (compare_str(graphics->lang, "ru")) {
-    return lang_ru();
-  } else if (compare_str(graphics->lang, "en")) {
-    return lang_en();
-  } else {
-    return lang_en();
-  }
-}
-
 struct lang *lang_init(char16_t const **data) {
   struct lang *lang = malloc(sizeof *lang);
   lang->info = malloc(sizeof(char16_t const *) * LANG_COUNT);
@@ -39,6 +29,15 @@ void lang_free(struct lang *lang) {
   for (size_t i = 0; i < LANG_COUNT; ++i) {
     free(lang->info[i]);
   }
-
   free(lang);
+}
+
+void change_lang(struct lang **lang, char const *locale) {
+  if (compare_str(locale, "ru") && *lang != NULL) {
+    lang_free(*lang);
+    *lang = lang_ru();
+  } else if (compare_str(locale, "en") && *lang != NULL) {
+    lang_free(*lang);
+    *lang = lang_en();
+  }
 }

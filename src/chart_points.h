@@ -17,5 +17,5 @@ struct chart_points {
 
 struct chart_points *chart_points_init(char16_t const *unit, int32_t *charts,
                                        size_t len, SDL_Point pos_chart,
-                                       enum CHARTS_MODS charts_mod);
+                                       enum CHARTS_MODS charts_mod, size_t gap);
 void chart_points_free(struct chart_points *chart_points);

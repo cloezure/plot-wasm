@@ -35,7 +35,7 @@ void off_draw(void) {
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-void change_locale(char const *local) { g_graphics->lang = local; }
+void change_locale(char const *local) { change_lang(&g_lang, local); }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -111,7 +111,6 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->height_mid = height / 2;
   new_graphics->fps = fps;
   new_graphics->mouse = (SDL_Point){0, 0};
-  new_graphics->lang = "ru";
   new_graphics->last_press = 0;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -119,18 +118,18 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-  window = SDL_CreateWindow("Odas", SDL_WINDOWPOS_UNDEFINED,
-                            SDL_WINDOWPOS_UNDEFINED, new_graphics->pos.w,
-                            new_graphics->pos.h, SDL_WINDOW_SHOWN);
+  g_window = SDL_CreateWindow("Odas", SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED, new_graphics->pos.w,
+                              new_graphics->pos.h, SDL_WINDOW_SHOWN);
 
-  if (window == NULL) {
+  if (g_window == NULL) {
     display_error_sdl("window could not be created");
     return NULL;
   }
 
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+  g_renderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_PRESENTVSYNC);
 
-  if (renderer == NULL) {
+  if (g_renderer == NULL) {
     display_error_sdl("renderer could not be created");
     return NULL;
   }
@@ -157,6 +156,8 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   index_plots_set(plots);
   graphics_plots_free(plots);
 
+  g_lang = lang_en();
+
   return new_graphics;
 }
 
@@ -167,11 +168,13 @@ void graphics_free(struct graphics *graphics) {
 
   free(graphics);
 
-  SDL_DestroyRenderer(renderer);
-  renderer = NULL;
+  SDL_DestroyRenderer(g_renderer);
+  g_renderer = NULL;
 
-  SDL_DestroyWindow(window);
-  window = NULL;
+  SDL_DestroyWindow(g_window);
+  g_window = NULL;
+
+  lang_free(g_lang);
 
   TTF_Quit();
   SDL_Quit();

@@ -13,11 +13,6 @@ struct plot {
   struct chart_points *hcharts;
   int index;
 
-  // vertic MHz
-  /* struct chart_points *vp; */
-  // horiz dB
-  /* struct chart_points *hp; */
-
   struct {
     SDL_FPoint *data;
     size_t length;

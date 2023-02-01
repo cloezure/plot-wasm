@@ -19,7 +19,7 @@ ifeq ($(MODE), $(WEB))
 	BUILD_IN := mjs
 
 override CFLAGS += -std=c17\
-				-g3\
+				-O2\
 				-sUSE_SDL_TTF=2\
 				-sNO_EXIT_RUNTIME=1\
 				-sENVIRONMENT="web"\
@@ -30,13 +30,8 @@ override CFLAGS += -std=c17\
 				-sUSE_SDL=2\
 				-sSINGLE_FILE=1\
 				-sMODULARIZE=1\
-				-sALLOW_MEMORY_GROWTH\
 				-sEXPORT_NAME="GraphicsPlot"\
-				-sASSERTIONS=1\
-				-sSAFE_HEAP=1\
-				-sSTACK_OVERFLOW_CHECK=2\
 				--preload-file ./res
-
 
 # -sEMCC_AUTODEBUG=1
 else

@@ -9,35 +9,56 @@
 
 struct chart_points *chart_points_init(char16_t const *unit, int32_t *charts,
                                        size_t len, SDL_Point pos_chart,
-                                       enum CHARTS_MODS charts_mod) {
+                                       enum CHARTS_MODS charts_mod,
+                                       size_t gap) {
   struct chart_points *chpo = malloc(sizeof *chpo);
 
   chpo->len = len;
-  chpo->charts_nums = malloc(sizeof *chpo->charts_nums);
+  chpo->charts_nums = malloc(sizeof *chpo->charts_nums * len);
   for (size_t i = 0; i < len; ++i) {
     chpo->charts_nums[i] = charts[i];
   }
 
-  chpo->points = malloc(sizeof(struct text *) * len);
+  chpo->points = malloc(sizeof(struct text8 *) * len);
+  bool sdvig_1 = true;
+  bool sdvig_2 = true;
+  bool sdvig_3 = true;
   for (size_t i = 0; i < len; ++i) {
+    if (charts_mod == CHARTS_MODE_V) {
+      if (charts[i] > -10 && sdvig_1) {
+        pos_chart.x += 10;
+        sdvig_1 = false;
+      }
+      if (charts[i] <= -10 && sdvig_2) {
+        pos_chart.x -= 5;
+        sdvig_2 = false;
+      }
+      if (charts[i] <= -100 && sdvig_3) {
+        pos_chart.x -= 5;
+        sdvig_3 = false;
+      }
+    }
+
     char buff[64] = {0};
-    sprintf(buff, "%3d", charts[i]);
+    sprintf(buff, "%+2d", charts[i]);
     chpo->points[i] = text8_init(text_get_font_type(TEXT_FONT_REGULAR), 14,
                                  COLOR_CHANNEL_HEAD, pos_chart, buff);
 
-    if (charts_mod == CHARTS_MODE_H) {
-      pos_chart.x += 24;
-    } else if (charts_mod == CHARTS_MODE_V) {
-      pos_chart.y += 24;
+    if (charts_mod == CHARTS_MODE_V) {
+      pos_chart.y += gap;
+    } else if (charts_mod == CHARTS_MODE_H) {
+      pos_chart.x += gap;
     }
   }
 
   SDL_Rect mid_poings = chpo->points[len / 2]->position;
   SDL_Point unit_pos = {0, 0};
   if (charts_mod == CHARTS_MODE_H) {
-    unit_pos = (SDL_Point){.x = mid_poings.x, .y = mid_poings.y - 24};
+    unit_pos = (SDL_Point){.x = mid_poings.x, .y = mid_poings.y + 15};
   } else if (charts_mod == CHARTS_MODE_V) {
-    unit_pos = (SDL_Point){.x = mid_poings.x - 24, .y = mid_poings.y};
+    unit_pos = (SDL_Point){.x = mid_poings.x + 5,
+                           .y = mid_poings.y -
+                                ((len + 1) * chpo->points[0]->position.h)};
   }
 
   chpo->unit = text16_init(text_get_font_type(TEXT_FONT_BOLD), 12,

@@ -50,7 +50,6 @@ struct graphics {
   int32_t width_mid;
   int32_t height_mid;
   int32_t fps;
-  char const *lang;
   int last_press;
 
   struct vec_rchannel *relay;

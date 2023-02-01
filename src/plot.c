@@ -17,7 +17,7 @@ struct plot *plot_init(SDL_Point position, char16_t const *name) {
     return NULL;
   }
 
-  SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, sur);
+  SDL_Texture *tex = SDL_CreateTextureFromSurface(g_renderer, sur);
   if (tex == NULL) {
     display_error_sdl("Can't create texture from surface plot_back");
     SDL_FreeSurface(sur);
@@ -41,27 +41,27 @@ struct plot *plot_init(SDL_Point position, char16_t const *name) {
   new_plot->name = text16_init(text_get_font_type(TEXT_FONT_BOLD),
                                plot_size_name, COLOR_PLOT_NAME, pos_name, name);
 
-  size_t hlpoints = 5;
-  int32_t hj = -27;
+  size_t hlpoints = 7;
+  int32_t hj = -30;
   int32_t *hpoints = malloc(sizeof *hpoints * hlpoints);
   for (size_t i = 0; i < hlpoints; ++i) {
     hpoints[i] = hj;
-    hj += 7;
+    hj += 10;
   }
-  SDL_Point hcharts_pos = {.x = position.x, .y = position.y + sur->h};
-  new_plot->hcharts =
-      chart_points_init(u"MHz", hpoints, hlpoints, hcharts_pos, CHARTS_MODE_H);
+  SDL_Point hcharts_pos = {.x = position.x, .y = position.y + sur->h + 5};
+  new_plot->hcharts = chart_points_init(u"MHz", hpoints, hlpoints, hcharts_pos,
+                                        CHARTS_MODE_H, 30);
 
-  size_t vlpoints = 5;
+  size_t vlpoints = 6;
   int32_t vj = 0;
   int32_t *vpoints = malloc(sizeof *vpoints * vlpoints);
   for (size_t i = 0; i < vlpoints; ++i) {
     vpoints[i] = vj;
-    vj -= 7;
+    vj -= 20;
   }
-  SDL_Point vcharts_pos = {.x = position.x - 20, .y = position.y};
-  new_plot->vcharts =
-      chart_points_init(u"GHz", vpoints, vlpoints, vcharts_pos, CHARTS_MODE_V);
+  SDL_Point vcharts_pos = {.x = position.x - 34, .y = position.y};
+  new_plot->vcharts = chart_points_init(u"dB", vpoints, vlpoints, vcharts_pos,
+                                        CHARTS_MODE_V, 28);
 
   SDL_FreeSurface(sur);
 

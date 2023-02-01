@@ -29,7 +29,7 @@ static inline bool rchannel_init_number(struct rchannel *rchannel,
     SDL_DestroyTexture(rchannel->number.texture);
   }
 
-  rchannel->number.texture = SDL_CreateTextureFromSurface(renderer, sur_num);
+  rchannel->number.texture = SDL_CreateTextureFromSurface(g_renderer, sur_num);
   if (rchannel->number.texture == NULL) {
     display_error_sdl("Can't create texture from surface sur_num");
     SDL_FreeSurface(sur_num);

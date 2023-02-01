@@ -46,7 +46,7 @@ struct text16 *text16_init(char const *font_path, int32_t font_size,
   new_text->position.w = sur->w;
   new_text->position.h = sur->h;
 
-  new_text->texture = SDL_CreateTextureFromSurface(renderer, sur);
+  new_text->texture = SDL_CreateTextureFromSurface(g_renderer, sur);
   if (new_text->texture == NULL) {
     display_error_sdl("texture could not be create by surface");
   }
@@ -87,7 +87,7 @@ void text16_change_content(struct text16 *text, char16_t const *content) {
   SDL_DestroyTexture(text->texture);
   text->texture = NULL;
 
-  text->texture = SDL_CreateTextureFromSurface(renderer, sur);
+  text->texture = SDL_CreateTextureFromSurface(g_renderer, sur);
   if (text->texture == NULL) {
     display_error_sdl("text->texture could not be init");
   }
@@ -115,7 +115,7 @@ void text16_change_color(struct text16 *text, SDL_Color color) {
   text->position.w = sur->w;
   text->position.h = sur->h;
 
-  text->texture = SDL_CreateTextureFromSurface(renderer, sur);
+  text->texture = SDL_CreateTextureFromSurface(g_renderer, sur);
   if (text->texture == NULL) {
     display_error_sdl("text->texture could not be init");
   }
@@ -161,7 +161,7 @@ struct text8 *text8_init(char const *font_path, int32_t font_size,
   new_text->position.w = sur->w;
   new_text->position.h = sur->h;
 
-  new_text->texture = SDL_CreateTextureFromSurface(renderer, sur);
+  new_text->texture = SDL_CreateTextureFromSurface(g_renderer, sur);
   if (new_text->texture == NULL) {
     display_error_sdl("texture could not be create by surface");
   }
@@ -201,7 +201,7 @@ void text8_change_content(struct text8 *text, char const *content) {
   SDL_DestroyTexture(text->texture);
   text->texture = NULL;
 
-  text->texture = SDL_CreateTextureFromSurface(renderer, sur);
+  text->texture = SDL_CreateTextureFromSurface(g_renderer, sur);
   if (text->texture == NULL) {
     display_error_sdl("text->texture could not be init");
   }
@@ -227,7 +227,7 @@ void text8_change_color(struct text8 *text, SDL_Color color) {
   text->position.w = sur->w;
   text->position.h = sur->h;
 
-  text->texture = SDL_CreateTextureFromSurface(renderer, sur);
+  text->texture = SDL_CreateTextureFromSurface(g_renderer, sur);
   if (text->texture == NULL) {
     display_error_sdl("text->texture could not be init");
   }

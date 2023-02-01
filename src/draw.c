@@ -47,8 +47,8 @@ static inline void check_click(struct plot *plot) {
 }
 
 static inline void draw_background(SDL_Color color) {
-  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-  SDL_RenderClear(renderer);
+  SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, color.a);
+  SDL_RenderClear(g_renderer);
 }
 
 static inline void draw_in_plot_info(struct plot *plot, char16_t const *info) {
@@ -72,13 +72,13 @@ static inline void draw_red_line_plot(struct plot *plot, char16_t const *info) {
 
   float const end_start_x = start_x + plot->position.w;
   float const mid_dy = mid_y + 40;
-  SDL_SetRenderDrawColor(renderer, 0xDF, 0x40, 0x53, 0xFF);
-  SDL_RenderSetViewport(renderer, &plot_pos);
-  SDL_RenderDrawLineF(renderer, start_x, mid_dy, end_start_x, mid_dy);
+  SDL_SetRenderDrawColor(g_renderer, 0xDF, 0x40, 0x53, 0xFF);
+  SDL_RenderSetViewport(g_renderer, &plot_pos);
+  SDL_RenderDrawLineF(g_renderer, start_x, mid_dy, end_start_x, mid_dy);
 
   draw_in_plot_info(plot, info);
 
-  SDL_RenderSetViewport(renderer, &g_graphics->pos);
+  SDL_RenderSetViewport(g_renderer, &g_graphics->pos);
 }
 
 /* static void draw_info_coinf_in_rect(struct plot const *plot) { */
@@ -116,10 +116,8 @@ static inline void draw_red_line_plot(struct plot *plot, char16_t const *info) {
 /* } */
 
 static inline void draw_plot_data(struct plot *plot) {
-  struct lang *lang = lang_now(g_graphics);
   if (check_zero_array(plot->fft.data, plot->fft.length)) {
-    draw_red_line_plot(plot, lang->info[NO_DATA]);
-    lang_free(lang);
+    draw_red_line_plot(plot, g_lang->info[NO_DATA]);
     return;
   }
 
@@ -132,34 +130,32 @@ static inline void draw_plot_data(struct plot *plot) {
   SDL_FPoint next = {.x = prev.x, .y = prev.y};
 
   size_t const fft_length = plot->fft.length;
-  SDL_RenderSetViewport(renderer, &plot->position);
-  SDL_SetRenderDrawColor(renderer, 0x3B, 0x94, 0xE5, 0xFF);
+  SDL_RenderSetViewport(g_renderer, &plot->position);
+  SDL_SetRenderDrawColor(g_renderer, 0x3B, 0x94, 0xE5, 0xFF);
   for (size_t j = 0; j < fft_length; ++j) {
     SDL_FPoint const *fft = plot->fft.data;
     plot->fft.data->x = prev.x;
 
     next.y = fft[j].y + mid_y;
-    SDL_RenderDrawLineF(renderer, prev.x, prev.y, next.x, next.y);
+    SDL_RenderDrawLineF(g_renderer, prev.x, prev.y, next.x, next.y);
     next.x += dx;
     prev.x = next.x;
     prev.y = next.y;
   }
 
-  draw_in_plot_info(plot, lang->info[CLICK_TO_OPEN]);
+  draw_in_plot_info(plot, g_lang->info[CLICK_TO_OPEN]);
   check_click(plot);
 
-  SDL_RenderSetViewport(renderer, &g_graphics->pos);
-  lang_free(lang);
+  SDL_RenderSetViewport(g_renderer, &g_graphics->pos);
 }
 
 static inline void draw_plots(void) {
   struct plot **plots = graphics_plots_init(g_graphics);
-  struct lang *lang = lang_now(g_graphics);
   size_t idx = 0;
   for (size_t i = 0; i < g_graphics->service->count; ++i) {
     if (!g_graphics->service->schs[i]->state) {
-      draw_red_line_plot(plots[idx], lang->info[CHANNEL_OFF]);
-      draw_red_line_plot(plots[idx + 1], lang->info[CHANNEL_OFF]);
+      draw_red_line_plot(plots[idx], g_lang->info[CHANNEL_OFF]);
+      draw_red_line_plot(plots[idx + 1], g_lang->info[CHANNEL_OFF]);
       idx += 2;
     } else {
       draw_plot_data(plots[idx]);
@@ -170,8 +166,8 @@ static inline void draw_plots(void) {
 
   for (size_t i = 0; i < g_graphics->relay->count; ++i) {
     if (!g_graphics->relay->rchs[i]->state) {
-      draw_red_line_plot(plots[idx], lang->info[CHANNEL_OFF]);
-      draw_red_line_plot(plots[idx + 1], lang->info[CHANNEL_OFF]);
+      draw_red_line_plot(plots[idx], g_lang->info[CHANNEL_OFF]);
+      draw_red_line_plot(plots[idx + 1], g_lang->info[CHANNEL_OFF]);
       idx += 2;
     } else {
       draw_plot_data(plots[idx]);
@@ -180,7 +176,6 @@ static inline void draw_plots(void) {
     }
   }
   graphics_plots_free(plots);
-  lang_free(lang);
 }
 
 static inline void draw_fps(void) {
@@ -210,6 +205,42 @@ static inline void draw_schannels(struct vec_schannel *vec) {
 
     // draw channels number
     DRAW_IN_REN(sch->number->texture, &sch->number->position);
+
+    // draw plot0 hcharts
+    DRAW_IN_REN(sch->plot0->hcharts->unit->texture,
+                &sch->plot0->hcharts->unit->position);
+
+    for (size_t i = 0; i < sch->plot0->hcharts->len; ++i) {
+      DRAW_IN_REN(sch->plot0->hcharts->points[i]->texture,
+                  &sch->plot0->hcharts->points[i]->position);
+    }
+
+    // draw plot1 hcharts
+    DRAW_IN_REN(sch->plot1->hcharts->unit->texture,
+                &sch->plot1->hcharts->unit->position);
+
+    for (size_t i = 0; i < sch->plot1->hcharts->len; ++i) {
+      DRAW_IN_REN(sch->plot1->hcharts->points[i]->texture,
+                  &sch->plot1->hcharts->points[i]->position);
+    }
+
+    // draw plot0 vcharts
+    DRAW_IN_REN(sch->plot0->vcharts->unit->texture,
+                &sch->plot0->vcharts->unit->position);
+
+    for (size_t i = 0; i < sch->plot0->vcharts->len; ++i) {
+      DRAW_IN_REN(sch->plot0->vcharts->points[i]->texture,
+                  &sch->plot0->vcharts->points[i]->position);
+    }
+
+    // draw plot1 vcharts
+    DRAW_IN_REN(sch->plot1->vcharts->unit->texture,
+                &sch->plot1->vcharts->unit->position);
+
+    for (size_t i = 0; i < sch->plot1->vcharts->len; ++i) {
+      DRAW_IN_REN(sch->plot1->vcharts->points[i]->texture,
+                  &sch->plot1->vcharts->points[i]->position);
+    }
   }
 }
 
@@ -228,21 +259,62 @@ static inline void draw_rchannels(struct vec_rchannel *vec) {
 
     // draw channels number
     DRAW_IN_REN(rch->number.texture, &rch->number.position);
+
+    // draw plot0 hcharts
+    DRAW_IN_REN(rch->plot0->hcharts->unit->texture,
+                &rch->plot0->hcharts->unit->position);
+
+    for (size_t i = 0; i < rch->plot0->hcharts->len; ++i) {
+      DRAW_IN_REN(rch->plot0->hcharts->points[i]->texture,
+                  &rch->plot0->hcharts->points[i]->position);
+    }
+
+    // draw plot1 hcharts
+    DRAW_IN_REN(rch->plot1->hcharts->unit->texture,
+                &rch->plot1->hcharts->unit->position);
+
+    for (size_t i = 0; i < rch->plot1->hcharts->len; ++i) {
+      DRAW_IN_REN(rch->plot1->hcharts->points[i]->texture,
+                  &rch->plot1->hcharts->points[i]->position);
+    }
+
+    // draw plot0 vcharts
+    DRAW_IN_REN(rch->plot0->vcharts->unit->texture,
+                &rch->plot0->vcharts->unit->position);
+
+    for (size_t i = 0; i < rch->plot0->vcharts->len; ++i) {
+      DRAW_IN_REN(rch->plot0->vcharts->points[i]->texture,
+                  &rch->plot0->vcharts->points[i]->position);
+    }
+
+    // draw plot1 vcharts
+    DRAW_IN_REN(rch->plot1->vcharts->unit->texture,
+                &rch->plot1->vcharts->unit->position);
+
+    for (size_t i = 0; i < rch->plot1->vcharts->len; ++i) {
+      DRAW_IN_REN(rch->plot1->vcharts->points[i]->texture,
+                  &rch->plot1->vcharts->points[i]->position);
+    }
   }
 }
 
 static inline void draw_line_channel_delim(void) {
   SDL_Rect rec = {.x = 0, .y = 244 * 2, .h = 2, .w = g_graphics->pos.w};
-  SDL_SetRenderDrawColor(renderer, 0x1A, 0x1A, 0x1A, 0xFF);
-  SDL_RenderDrawRect(renderer, &rec);
+  SDL_SetRenderDrawColor(g_renderer, 0x1A, 0x1A, 0x1A, 0xFF);
+  SDL_RenderDrawRect(g_renderer, &rec);
 }
 
 static inline void draw_coinf16(struct coinf16 *coinf) {
-  SDL_RenderSetViewport(renderer, &g_graphics->pos);
-  SDL_SetRenderDrawColor(renderer, coinf->back.r, coinf->back.g, coinf->back.b,
-                         coinf->back.a);
+  SDL_RenderSetViewport(g_renderer, &g_graphics->pos);
+  SDL_SetRenderDrawColor(g_renderer, coinf->back.r, coinf->back.g,
+                         coinf->back.b, coinf->back.a);
+  if ((g_graphics->mouse.x + coinf->inf_txt->position.w) >
+      (g_graphics->pos.w - 10)) {
+    coinf->inf_txt->position.x -= coinf->inf_txt->position.w;
+  }
+
   // draw back
-  SDL_RenderFillRect(renderer, &coinf->inf_txt->position);
+  SDL_RenderFillRect(g_renderer, &coinf->inf_txt->position);
   // draw text
   DRAW_IN_REN(coinf->inf_txt->texture, &coinf->inf_txt->position);
 }
@@ -280,13 +352,13 @@ void handle_events(void) {
   }
 
   draw();
-  click = false;
-  SDL_RenderPresent(renderer);
-  g_graphics->last_press = 0;
+  SDL_RenderPresent(g_renderer);
 
   frame_time = SDL_GetTicks() - frame_start;
 
   if (frame_delay > frame_time) {
     SDL_Delay(frame_delay - frame_time);
   }
+
+  g_graphics->last_press = 0;
 }

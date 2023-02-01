@@ -4,8 +4,9 @@
 #include <stdbool.h>
 
 extern struct graphics *g_graphics;
-extern SDL_Window *window;
-extern SDL_Renderer *renderer;
+extern SDL_Window *g_window;
+extern SDL_Renderer *g_renderer;
+extern struct lang *g_lang;
 
 #define PLOTS_COUNT 12
 #define CHANNELS_COUNT 6
