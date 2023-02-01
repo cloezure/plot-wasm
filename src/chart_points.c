@@ -14,7 +14,7 @@ struct chart_points *chart_points_init(char16_t const *unit, int32_t *charts,
   struct chart_points *chpo = malloc(sizeof *chpo);
 
   chpo->len = len;
-  chpo->charts_nums = malloc(sizeof *chpo->charts_nums * len);
+  chpo->charts_nums = malloc(sizeof(int32_t) * len);
   for (size_t i = 0; i < len; ++i) {
     chpo->charts_nums[i] = charts[i];
   }

@@ -50,7 +50,7 @@ void set_fps(int fps) {
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
 #endif
-int last_press(void) { return g_graphics->last_press; }
+int last_press(void) { return g_last_press; }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
@@ -111,7 +111,6 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   new_graphics->height_mid = height / 2;
   new_graphics->fps = fps;
   new_graphics->mouse = (SDL_Point){0, 0};
-  new_graphics->last_press = 0;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     display_error_sdl("sdl could not init");

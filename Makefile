@@ -4,7 +4,7 @@ TARGET := plot
 OUT := 0
 WEB := 1
 # project type
-MODE := $(OUT)
+MODE := $(WEB)
 ifeq ($(MODE), $(WEB))
 PROJECT_TYPE := "WEB"
 else
@@ -30,10 +30,14 @@ override CFLAGS += -std=c17\
 				-sUSE_SDL=2\
 				-sSINGLE_FILE=1\
 				-sMODULARIZE=1\
+				-sALLOW_MEMORY_GROWTH\
 				-sEXPORT_NAME="GraphicsPlot"\
 				--preload-file ./res
 
 # -sEMCC_AUTODEBUG=1
+#				-sSAFE_HEAP=1\
+#				-sSTACK_OVERFLOW_CHECK=2\
+
 else
 # compiler
 CC := clang

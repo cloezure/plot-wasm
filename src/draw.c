@@ -37,12 +37,12 @@ static inline void draw_red_line_plot(struct plot *plot, char16_t const *info);
 static inline void draw_in_plot_info(struct plot *plot, char16_t const *info);
 
 SDL_Event event;
-bool click = false;
+bool click_left_mouse = false;
 
 static inline void check_click(struct plot *plot) {
-  if (click) {
-    g_graphics->last_press = plot->index;
-    click = false;
+  if (click_left_mouse) {
+    g_last_press = plot->index;
+    click_left_mouse = false;
   }
 }
 
@@ -61,6 +61,7 @@ static inline void draw_in_plot_info(struct plot *plot, char16_t const *info) {
     struct coinf16 *coinf = coinf16_init_text((SDL_Point){mx, my}, info);
     draw_coinf16(coinf);
     coinf16_free(coinf);
+    check_click(plot);
   }
 }
 
@@ -144,7 +145,6 @@ static inline void draw_plot_data(struct plot *plot) {
   }
 
   draw_in_plot_info(plot, g_lang->info[CLICK_TO_OPEN]);
-  check_click(plot);
 
   SDL_RenderSetViewport(g_renderer, &g_graphics->pos);
 }
@@ -326,6 +326,14 @@ static inline void draw(void) {
   draw_line_channel_delim();
   /* draw_fps(); */
   draw_plots();
+
+  /* char buff[100] = {'\0'}; */
+  /* sprintf(buff, "%d", g_last_press); */
+  /* struct text8 *t = text8_init(text_get_font_type(TEXT_FONT_REGULAR), 40, */
+  /*                              COLOR_GREEN, MIDDLE_POINT, buff); */
+
+  /* DRAW_IN_REN(t->texture, &t->position); */
+  /* text8_free(t); */
 }
 
 void handle_events(void) {
@@ -346,7 +354,7 @@ void handle_events(void) {
       SDL_GetMouseState(&g_graphics->mouse.x, &g_graphics->mouse.y);
     } else if (event.type == SDL_MOUSEBUTTONDOWN) {
       if (event.button.button == SDL_BUTTON_LEFT) {
-        click = true;
+        click_left_mouse = true;
       }
     }
   }
@@ -359,6 +367,4 @@ void handle_events(void) {
   if (frame_delay > frame_time) {
     SDL_Delay(frame_delay - frame_time);
   }
-
-  g_graphics->last_press = 0;
 }

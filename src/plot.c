@@ -64,6 +64,8 @@ struct plot *plot_init(SDL_Point position, char16_t const *name) {
                                         CHARTS_MODE_V, 28);
 
   SDL_FreeSurface(sur);
+  free(hpoints);
+  free(vpoints);
 
   return new_plot;
 }

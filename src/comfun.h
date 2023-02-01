@@ -9,6 +9,9 @@
 #include <uchar.h>
 #include <wchar.h>
 
+#define MIDDLE_POINT                                                           \
+  (SDL_Point) { .x = g_graphics->pos.x / 2, .y = g_graphics->pos.y / 2 }
+
 static inline void display_error_sdl(char const *info) {
   printf("%s! SDL_Error: %s\n", info, SDL_GetError());
 }
