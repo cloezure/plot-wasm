@@ -68,11 +68,11 @@ static inline void draw_in_plot_info(struct plot *plot, char16_t const *info) {
 static inline void draw_red_line_plot(struct plot *plot, char16_t const *info) {
   SDL_Rect const plot_pos = plot->position;
   float const x0 = plot->fft.x0;
-  float const start_x = 0;
+  float const start_x = 3;
   float const mid_y = x0 + (float)plot->position.h / 2;
 
   float const end_start_x = start_x + plot->position.w;
-  float const mid_dy = mid_y + 40;
+  float const mid_dy = mid_y + 35;
   SDL_SetRenderDrawColor(g_renderer, 0xDF, 0x40, 0x53, 0xFF);
   SDL_RenderSetViewport(g_renderer, &plot_pos);
   SDL_RenderDrawLineF(g_renderer, start_x, mid_dy, end_start_x, mid_dy);

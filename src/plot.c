@@ -61,7 +61,7 @@ struct plot *plot_init(SDL_Point position, char16_t const *name) {
   }
   SDL_Point vcharts_pos = {.x = position.x - 34, .y = position.y};
   new_plot->vcharts = chart_points_init(u"dB", vpoints, vlpoints, vcharts_pos,
-                                        CHARTS_MODE_V, 28);
+                                        CHARTS_MODE_V, 27);
 
   SDL_FreeSurface(sur);
   free(hpoints);

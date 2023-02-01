@@ -50,7 +50,7 @@ struct rchannel *rchannel_init(SDL_Point position, int32_t channel_number,
   struct rchannel *rchannel = malloc(sizeof *rchannel);
 
   SDL_Rect pos_num = {.x = position.x + 26, .y = position.y + 67};
-  SDL_Point pos_plot0_body = {.x = 69 + 48 + pos_num.x, .y = pos_num.y - 25};
+  SDL_Point pos_plot0_body = {.x = 130 + pos_num.x, .y = pos_num.y - 25};
   rchannel->plot0 = plot_init(pos_plot0_body, plot0_name);
 
   SDL_Point pos_plot1_body = {.x = pos_plot0_body.x +

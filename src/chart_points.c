@@ -26,11 +26,11 @@ struct chart_points *chart_points_init(char16_t const *unit, int32_t *charts,
   for (size_t i = 0; i < len; ++i) {
     if (charts_mod == CHARTS_MODE_V) {
       if (charts[i] > -10 && sdvig_1) {
-        pos_chart.x += 10;
+        pos_chart.x += 15;
         sdvig_1 = false;
       }
       if (charts[i] <= -10 && sdvig_2) {
-        pos_chart.x -= 5;
+        pos_chart.x -= 8;
         sdvig_2 = false;
       }
       if (charts[i] <= -100 && sdvig_3) {
@@ -56,9 +56,9 @@ struct chart_points *chart_points_init(char16_t const *unit, int32_t *charts,
   if (charts_mod == CHARTS_MODE_H) {
     unit_pos = (SDL_Point){.x = mid_poings.x, .y = mid_poings.y + 15};
   } else if (charts_mod == CHARTS_MODE_V) {
-    unit_pos = (SDL_Point){.x = mid_poings.x + 5,
+    unit_pos = (SDL_Point){.x = mid_poings.x + 10,
                            .y = mid_poings.y -
-                                ((len + 1) * chpo->points[0]->position.h)};
+                                ((len + 1) * chpo->points[0]->position.h) - 5};
   }
 
   chpo->unit = text16_init(text_get_font_type(TEXT_FONT_BOLD), 12,
