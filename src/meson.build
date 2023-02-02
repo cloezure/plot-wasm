@@ -1,0 +1,12 @@
+plot_src += files('chart_points.c',
+                  'draw.c',
+                  'global_vars.c',
+                  'graphics.c',
+                  'info_win.c',
+                  'js_api.c',
+                  'lang.c',
+                  'main.c',
+                  'plot.c',
+                  'relay_channel.c',
+                  'service_channel.c',
+                  'text.c')
