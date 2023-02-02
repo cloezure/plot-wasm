@@ -1,9 +1,6 @@
 #include "text.h"
-#include "comfun.h"
-#include "global.h"
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_surface.h>
-#include <SDL2/SDL_ttf.h>
+#include "common_functions.h"
+#include "global_vars.h"
 #include <assert.h>
 #include <string.h>
 
@@ -12,6 +9,16 @@ static inline void text16_content_update(struct text16 *text,
 
 static inline void text8_content_update(struct text8 *text,
                                         char const *content);
+
+#define TEXT_FREE(TEXT)                                                        \
+  assert(text);                                                                \
+  TTF_CloseFont(text->font);                                                   \
+  text->font = NULL;                                                           \
+  SDL_DestroyTexture(text->texture);                                           \
+  text->texture = NULL;                                                        \
+  free(text->content);                                                         \
+  text->content = NULL;                                                        \
+  free(text)
 
 char const *text_get_font_type(enum TEXT_FONT_TYPE type) {
   switch (type) {
@@ -57,26 +64,9 @@ struct text16 *text16_init(char const *font_path, int32_t font_size,
   return new_text;
 }
 
-void text16_free(struct text16 *text) {
-  assert(text);
-
-  TTF_CloseFont(text->font);
-  text->font = NULL;
-
-  SDL_DestroyTexture(text->texture);
-  text->texture = NULL;
-
-  free(text->content);
-  text->content = NULL;
-
-  free(text);
-}
+void text16_free(struct text16 *text) { TEXT_FREE(text); }
 
 void text16_change_content(struct text16 *text, char16_t const *content) {
-  if (text == NULL) {
-    return;
-  }
-
   SDL_Surface *sur =
       TTF_RenderUNICODE_Blended(text->font, content, text->color);
 
@@ -99,10 +89,6 @@ void text16_change_content(struct text16 *text, char16_t const *content) {
 }
 
 void text16_change_color(struct text16 *text, SDL_Color color) {
-  if (text == NULL) {
-    return;
-  }
-
   SDL_Surface *sur =
       TTF_RenderUNICODE_Blended(text->font, text->content, color);
 
@@ -172,26 +158,9 @@ struct text8 *text8_init(char const *font_path, int32_t font_size,
   return new_text;
 }
 
-void text8_free(struct text8 *text) {
-  assert(text);
-
-  TTF_CloseFont(text->font);
-  text->font = NULL;
-
-  SDL_DestroyTexture(text->texture);
-  text->texture = NULL;
-
-  free(text->content);
-  text->content = NULL;
-
-  free(text);
-}
+void text8_free(struct text8 *text) { TEXT_FREE(text); }
 
 void text8_change_content(struct text8 *text, char const *content) {
-  if (text == NULL) {
-    return;
-  }
-
   SDL_Surface *sur = TTF_RenderText_Blended(text->font, content, text->color);
 
   if (sur == NULL) {
@@ -212,10 +181,6 @@ void text8_change_content(struct text8 *text, char const *content) {
 }
 
 void text8_change_color(struct text8 *text, SDL_Color color) {
-  if (text == NULL) {
-    return;
-  }
-
   SDL_Surface *sur = TTF_RenderText_Blended(text->font, text->content, color);
 
   if (sur == NULL) {

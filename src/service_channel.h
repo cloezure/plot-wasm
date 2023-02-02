@@ -14,7 +14,7 @@ struct schannel {
 };
 
 struct vec_schannel {
-  struct schannel **schs;
+  struct schannel **channels;
   size_t count;
 };
 
@@ -26,3 +26,4 @@ void schannel_free(struct schannel *schannel);
 struct vec_schannel *vec_schannel_init(size_t count, SDL_Point position);
 void vec_schannel_free(struct vec_schannel *vec);
 void off_schannel(struct vec_schannel *vec, int sch_idx);
+void on_schannel(struct vec_schannel *vec, int sch_idx);

@@ -23,10 +23,11 @@ struct rchannel *rchannel_init(SDL_Point position, int32_t channel_number,
 void rchannel_free(struct rchannel *rchannel);
 
 struct vec_rchannel {
-  struct rchannel **rchs;
+  struct rchannel **channels;
   size_t count;
 };
 
 struct vec_rchannel *vec_rchannel_init(size_t count, SDL_Point position);
 void vec_rchannel_free(struct vec_rchannel *vec);
 void off_rchannel(struct vec_rchannel *vec, int rch_idx);
+void on_rchannel(struct vec_rchannel *vec, int rch_idx);

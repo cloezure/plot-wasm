@@ -1,7 +1,6 @@
 #pragma once
 #include "graphics.h"
 #include "lang.h"
-#include <stdbool.h>
 
 extern struct graphics *g_graphics;
 extern SDL_Window *g_window;

@@ -1,14 +1,13 @@
 #include "draw.h"
-#include "coinf.h"
 #include "colorscheme.h"
-#include "comfun.h"
-#include "global.h"
+#include "common_functions.h"
+#include "global_vars.h"
 #include "graphics.h"
+#include "info_win.h"
 #include "lang.h"
-#include "parse.h"
 #include "plot.h"
-#include "rchannel.h"
-#include "schannel.h"
+#include "relay_channel.h"
+#include "service_channel.h"
 #include "text.h"
 
 #include <SDL2/SDL_assert.h>
@@ -32,7 +31,7 @@ static inline void draw_fps(void);
 static inline void draw_rchannels(struct vec_rchannel *vec);
 static inline void draw_schannels(struct vec_schannel *vec);
 static inline void draw_line_channel_delim(void);
-static inline void draw_coinf16(struct coinf16 *coinf);
+static inline void draw_info_win16(struct info_win16 *info_win);
 static inline void draw_red_line_plot(struct plot *plot, char16_t const *info);
 static inline void draw_in_plot_info(struct plot *plot, char16_t const *info);
 
@@ -52,15 +51,15 @@ static inline void draw_background(SDL_Color color) {
 }
 
 static inline void draw_in_plot_info(struct plot *plot, char16_t const *info) {
-  float const mx = g_graphics->mouse.x;
-  float const my = g_graphics->mouse.y;
+  float const mx = g_graphics->mouse_position.x;
+  float const my = g_graphics->mouse_position.y;
   float const ph = plot->position.h + plot->position.y;
   float const pw = plot->position.w + plot->position.x;
 
   if (mx >= plot->position.x && my >= plot->position.y && mx < pw && my < ph) {
-    struct coinf16 *coinf = coinf16_init_text((SDL_Point){mx, my}, info);
-    draw_coinf16(coinf);
-    coinf16_free(coinf);
+    struct info_win16 *coinf = info_win16_init_text((SDL_Point){mx, my}, info);
+    draw_info_win16(coinf);
+    info_win16_free(coinf);
     check_click(plot);
   }
 }
@@ -79,7 +78,7 @@ static inline void draw_red_line_plot(struct plot *plot, char16_t const *info) {
 
   draw_in_plot_info(plot, info);
 
-  SDL_RenderSetViewport(g_renderer, &g_graphics->pos);
+  SDL_RenderSetViewport(g_renderer, &g_graphics->position);
 }
 
 /* static void draw_info_coinf_in_rect(struct plot const *plot) { */
@@ -146,14 +145,14 @@ static inline void draw_plot_data(struct plot *plot) {
 
   draw_in_plot_info(plot, g_lang->info[CLICK_TO_OPEN]);
 
-  SDL_RenderSetViewport(g_renderer, &g_graphics->pos);
+  SDL_RenderSetViewport(g_renderer, &g_graphics->position);
 }
 
 static inline void draw_plots(void) {
   struct plot **plots = graphics_plots_init(g_graphics);
   size_t idx = 0;
-  for (size_t i = 0; i < g_graphics->service->count; ++i) {
-    if (!g_graphics->service->schs[i]->state) {
+  for (size_t i = 0; i < g_graphics->vec_service->count; ++i) {
+    if (!g_graphics->vec_service->channels[i]->state) {
       draw_red_line_plot(plots[idx], g_lang->info[CHANNEL_OFF]);
       draw_red_line_plot(plots[idx + 1], g_lang->info[CHANNEL_OFF]);
       idx += 2;
@@ -164,8 +163,8 @@ static inline void draw_plots(void) {
     }
   }
 
-  for (size_t i = 0; i < g_graphics->relay->count; ++i) {
-    if (!g_graphics->relay->rchs[i]->state) {
+  for (size_t i = 0; i < g_graphics->vec_relay->count; ++i) {
+    if (!g_graphics->vec_relay->channels[i]->state) {
       draw_red_line_plot(plots[idx], g_lang->info[CHANNEL_OFF]);
       draw_red_line_plot(plots[idx + 1], g_lang->info[CHANNEL_OFF]);
       idx += 2;
@@ -185,61 +184,61 @@ static inline void draw_fps(void) {
 
   struct text8 *fps = text8_init(text_get_font_type(TEXT_FONT_BOLD), 60,
                                  COLOR_GREEN, pos, buff);
-  fps->position.x = g_graphics->pos.w - fps->position.w - 10;
+  fps->position.x = g_graphics->position.w - fps->position.w - 10;
 
-  DRAW_IN_REN(fps->texture, &fps->position);
+  DRAW_TEXTURE(fps->texture, &fps->position);
   text8_free(fps);
 }
 
 static inline void draw_schannels(struct vec_schannel *vec) {
   for (size_t i = 0; i < vec->count; ++i) {
-    struct schannel *sch = vec->schs[i];
+    struct schannel *sch = vec->channels[i];
 
     // draw back
-    DRAW_IN_REN(sch->plot0->background, &sch->plot0->position);
-    DRAW_IN_REN(sch->plot1->background, &sch->plot1->position);
+    DRAW_TEXTURE(sch->plot0->background, &sch->plot0->position);
+    DRAW_TEXTURE(sch->plot1->background, &sch->plot1->position);
 
     // draw name
-    DRAW_IN_REN(sch->plot0->name->texture, &sch->plot0->name->position);
-    DRAW_IN_REN(sch->plot1->name->texture, &sch->plot1->name->position);
+    DRAW_TEXTURE(sch->plot0->name->texture, &sch->plot0->name->position);
+    DRAW_TEXTURE(sch->plot1->name->texture, &sch->plot1->name->position);
 
     // draw channels number
-    DRAW_IN_REN(sch->number->texture, &sch->number->position);
+    DRAW_TEXTURE(sch->number->texture, &sch->number->position);
 
     // draw plot0 hcharts
-    DRAW_IN_REN(sch->plot0->hcharts->unit->texture,
-                &sch->plot0->hcharts->unit->position);
+    DRAW_TEXTURE(sch->plot0->hcharts->unit->texture,
+                 &sch->plot0->hcharts->unit->position);
 
-    for (size_t i = 0; i < sch->plot0->hcharts->len; ++i) {
-      DRAW_IN_REN(sch->plot0->hcharts->points[i]->texture,
-                  &sch->plot0->hcharts->points[i]->position);
+    for (size_t i = 0; i < sch->plot0->hcharts->length; ++i) {
+      DRAW_TEXTURE(sch->plot0->hcharts->points[i]->texture,
+                   &sch->plot0->hcharts->points[i]->position);
     }
 
     // draw plot1 hcharts
-    DRAW_IN_REN(sch->plot1->hcharts->unit->texture,
-                &sch->plot1->hcharts->unit->position);
+    DRAW_TEXTURE(sch->plot1->hcharts->unit->texture,
+                 &sch->plot1->hcharts->unit->position);
 
-    for (size_t i = 0; i < sch->plot1->hcharts->len; ++i) {
-      DRAW_IN_REN(sch->plot1->hcharts->points[i]->texture,
-                  &sch->plot1->hcharts->points[i]->position);
+    for (size_t i = 0; i < sch->plot1->hcharts->length; ++i) {
+      DRAW_TEXTURE(sch->plot1->hcharts->points[i]->texture,
+                   &sch->plot1->hcharts->points[i]->position);
     }
 
     // draw plot0 vcharts
-    DRAW_IN_REN(sch->plot0->vcharts->unit->texture,
-                &sch->plot0->vcharts->unit->position);
+    DRAW_TEXTURE(sch->plot0->vcharts->unit->texture,
+                 &sch->plot0->vcharts->unit->position);
 
-    for (size_t i = 0; i < sch->plot0->vcharts->len; ++i) {
-      DRAW_IN_REN(sch->plot0->vcharts->points[i]->texture,
-                  &sch->plot0->vcharts->points[i]->position);
+    for (size_t i = 0; i < sch->plot0->vcharts->length; ++i) {
+      DRAW_TEXTURE(sch->plot0->vcharts->points[i]->texture,
+                   &sch->plot0->vcharts->points[i]->position);
     }
 
     // draw plot1 vcharts
-    DRAW_IN_REN(sch->plot1->vcharts->unit->texture,
-                &sch->plot1->vcharts->unit->position);
+    DRAW_TEXTURE(sch->plot1->vcharts->unit->texture,
+                 &sch->plot1->vcharts->unit->position);
 
-    for (size_t i = 0; i < sch->plot1->vcharts->len; ++i) {
-      DRAW_IN_REN(sch->plot1->vcharts->points[i]->texture,
-                  &sch->plot1->vcharts->points[i]->position);
+    for (size_t i = 0; i < sch->plot1->vcharts->length; ++i) {
+      DRAW_TEXTURE(sch->plot1->vcharts->points[i]->texture,
+                   &sch->plot1->vcharts->points[i]->position);
     }
   }
 }
@@ -247,82 +246,83 @@ static inline void draw_schannels(struct vec_schannel *vec) {
 static inline void draw_rchannels(struct vec_rchannel *vec) {
   for (size_t i = 0; i < vec->count; ++i) {
 
-    struct rchannel *rch = vec->rchs[i];
+    struct rchannel *rch = vec->channels[i];
 
     // draw back
-    DRAW_IN_REN(rch->plot0->background, &rch->plot0->position);
-    DRAW_IN_REN(rch->plot1->background, &rch->plot1->position);
+    DRAW_TEXTURE(rch->plot0->background, &rch->plot0->position);
+    DRAW_TEXTURE(rch->plot1->background, &rch->plot1->position);
 
     // draw name
-    DRAW_IN_REN(rch->plot0->name->texture, &rch->plot0->name->position);
-    DRAW_IN_REN(rch->plot1->name->texture, &rch->plot1->name->position);
+    DRAW_TEXTURE(rch->plot0->name->texture, &rch->plot0->name->position);
+    DRAW_TEXTURE(rch->plot1->name->texture, &rch->plot1->name->position);
 
     // draw channels number
-    DRAW_IN_REN(rch->number.texture, &rch->number.position);
+    DRAW_TEXTURE(rch->number.texture, &rch->number.position);
 
     // draw plot0 hcharts
-    DRAW_IN_REN(rch->plot0->hcharts->unit->texture,
-                &rch->plot0->hcharts->unit->position);
+    DRAW_TEXTURE(rch->plot0->hcharts->unit->texture,
+                 &rch->plot0->hcharts->unit->position);
 
-    for (size_t i = 0; i < rch->plot0->hcharts->len; ++i) {
-      DRAW_IN_REN(rch->plot0->hcharts->points[i]->texture,
-                  &rch->plot0->hcharts->points[i]->position);
+    for (size_t i = 0; i < rch->plot0->hcharts->length; ++i) {
+      DRAW_TEXTURE(rch->plot0->hcharts->points[i]->texture,
+                   &rch->plot0->hcharts->points[i]->position);
     }
 
     // draw plot1 hcharts
-    DRAW_IN_REN(rch->plot1->hcharts->unit->texture,
-                &rch->plot1->hcharts->unit->position);
+    DRAW_TEXTURE(rch->plot1->hcharts->unit->texture,
+                 &rch->plot1->hcharts->unit->position);
 
-    for (size_t i = 0; i < rch->plot1->hcharts->len; ++i) {
-      DRAW_IN_REN(rch->plot1->hcharts->points[i]->texture,
-                  &rch->plot1->hcharts->points[i]->position);
+    for (size_t i = 0; i < rch->plot1->hcharts->length; ++i) {
+      DRAW_TEXTURE(rch->plot1->hcharts->points[i]->texture,
+                   &rch->plot1->hcharts->points[i]->position);
     }
 
     // draw plot0 vcharts
-    DRAW_IN_REN(rch->plot0->vcharts->unit->texture,
-                &rch->plot0->vcharts->unit->position);
+    DRAW_TEXTURE(rch->plot0->vcharts->unit->texture,
+                 &rch->plot0->vcharts->unit->position);
 
-    for (size_t i = 0; i < rch->plot0->vcharts->len; ++i) {
-      DRAW_IN_REN(rch->plot0->vcharts->points[i]->texture,
-                  &rch->plot0->vcharts->points[i]->position);
+    for (size_t i = 0; i < rch->plot0->vcharts->length; ++i) {
+      DRAW_TEXTURE(rch->plot0->vcharts->points[i]->texture,
+                   &rch->plot0->vcharts->points[i]->position);
     }
 
     // draw plot1 vcharts
-    DRAW_IN_REN(rch->plot1->vcharts->unit->texture,
-                &rch->plot1->vcharts->unit->position);
+    DRAW_TEXTURE(rch->plot1->vcharts->unit->texture,
+                 &rch->plot1->vcharts->unit->position);
 
-    for (size_t i = 0; i < rch->plot1->vcharts->len; ++i) {
-      DRAW_IN_REN(rch->plot1->vcharts->points[i]->texture,
-                  &rch->plot1->vcharts->points[i]->position);
+    for (size_t i = 0; i < rch->plot1->vcharts->length; ++i) {
+      DRAW_TEXTURE(rch->plot1->vcharts->points[i]->texture,
+                   &rch->plot1->vcharts->points[i]->position);
     }
   }
 }
 
 static inline void draw_line_channel_delim(void) {
-  SDL_Rect rec = {.x = 0, .y = 244 * 2, .h = 2, .w = g_graphics->pos.w};
+  SDL_Rect rec = {.x = 0, .y = 244 * 2, .h = 2, .w = g_graphics->position.w};
   SDL_SetRenderDrawColor(g_renderer, 0x1A, 0x1A, 0x1A, 0xFF);
   SDL_RenderDrawRect(g_renderer, &rec);
 }
 
-static inline void draw_coinf16(struct coinf16 *coinf) {
-  SDL_RenderSetViewport(g_renderer, &g_graphics->pos);
-  SDL_SetRenderDrawColor(g_renderer, coinf->back.r, coinf->back.g,
-                         coinf->back.b, coinf->back.a);
-  if ((g_graphics->mouse.x + coinf->inf_txt->position.w) >
-      (g_graphics->pos.w - 10)) {
-    coinf->inf_txt->position.x -= coinf->inf_txt->position.w;
+static inline void draw_info_win16(struct info_win16 *info_win) {
+  SDL_RenderSetViewport(g_renderer, &g_graphics->position);
+  SDL_SetRenderDrawColor(g_renderer, info_win->background.r,
+                         info_win->background.g, info_win->background.b,
+                         info_win->background.a);
+  if ((g_graphics->mouse_position.x + info_win->text->position.w) >
+      (g_graphics->position.w - 10)) {
+    info_win->text->position.x -= info_win->text->position.w;
   }
 
   // draw back
-  SDL_RenderFillRect(g_renderer, &coinf->inf_txt->position);
+  SDL_RenderFillRect(g_renderer, &info_win->text->position);
   // draw text
-  DRAW_IN_REN(coinf->inf_txt->texture, &coinf->inf_txt->position);
+  DRAW_TEXTURE(info_win->text->texture, &info_win->text->position);
 }
 
 static inline void draw(void) {
   draw_background(COLOR_BACKGROUND);
-  draw_schannels(g_graphics->service);
-  draw_rchannels(g_graphics->relay);
+  draw_schannels(g_graphics->vec_service);
+  draw_rchannels(g_graphics->vec_relay);
   draw_line_channel_delim();
   /* draw_fps(); */
   draw_plots();
@@ -332,7 +332,7 @@ static inline void draw(void) {
   /* struct text8 *t = text8_init(text_get_font_type(TEXT_FONT_REGULAR), 40, */
   /*                              COLOR_GREEN, MIDDLE_POINT, buff); */
 
-  /* DRAW_IN_REN(t->texture, &t->position); */
+  /* DRAW_TEXTURE(t->texture, &t->position); */
   /* text8_free(t); */
 }
 
@@ -351,7 +351,8 @@ void handle_events(void) {
       graphics_free(g_graphics);
       exit(EXIT_SUCCESS);
     } else if (event.type == SDL_MOUSEMOTION) {
-      SDL_GetMouseState(&g_graphics->mouse.x, &g_graphics->mouse.y);
+      SDL_GetMouseState(&g_graphics->mouse_position.x,
+                        &g_graphics->mouse_position.y);
     } else if (event.type == SDL_MOUSEBUTTONDOWN) {
       if (event.button.button == SDL_BUTTON_LEFT) {
         click_left_mouse = true;

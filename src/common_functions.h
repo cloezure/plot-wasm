@@ -10,7 +10,9 @@
 #include <wchar.h>
 
 #define MIDDLE_POINT                                                           \
-  (SDL_Point) { .x = g_graphics->pos.x / 2, .y = g_graphics->pos.y / 2 }
+  (SDL_Point) {                                                                \
+    .x = g_graphics->position.x / 2, .y = g_graphics->position.y / 2           \
+  }
 
 static inline void display_error_sdl(char const *info) {
   printf("%s! SDL_Error: %s\n", info, SDL_GetError());
@@ -31,7 +33,6 @@ static inline void display_error_img(char const *info) {
 #define UNUSED (void)
 
 static inline bool is_even(int32_t number) { return number % 2 == 0; }
-
 static inline bool is_odd(int32_t number) { return number % 2 != 0; }
 
 static inline bool check_zero_array(SDL_FPoint *data, size_t length) {
@@ -62,13 +63,6 @@ static inline char16_t *strcpy16(char16_t *dest, char16_t const *src) {
   return dest;
 }
 
-static inline int sprintf16_(char16_t *dest, size_t len, char16_t const *src,
-                             ...) {
-  // to lazy...
-  strcpy16(dest, u"0");
-  return 0;
-}
-
 static inline bool compare_str(char const *f, char const *s) {
   for (; *f != '\0' || *s != '\0'; ++f, ++s) {
     if (*f != *s)
@@ -77,12 +71,8 @@ static inline bool compare_str(char const *f, char const *s) {
   return true;
 }
 
-/* printf("ch = %zu wch = %zu\n", sizeof(char16_t), sizeof(wchar_t)); \ */
-/* static_assert(sizeof(char16_t) != sizeof(wchar_t), "wchar_t != char16_t\n");
- * \ */
 #define sprintf16(DEST, LEN, SRC, ...)                                         \
   if (sizeof(char16_t) != sizeof(wchar_t)) {                                   \
-    sprintf16_(DEST, LEN, SRC, __VA_ARGS__);                                   \
   } else {                                                                     \
     swprintf((wchar_t *)DEST, LEN, (wchar_t const *)SRC, __VA_ARGS__);         \
   }

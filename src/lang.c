@@ -1,5 +1,5 @@
 #include "lang.h"
-#include "comfun.h"
+#include "common_functions.h"
 #include <stdarg.h>
 #include <string.h>
 #include <uchar.h>

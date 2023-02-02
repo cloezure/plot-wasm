@@ -1,7 +1,7 @@
-#include "schannel.h"
+#include "service_channel.h"
 #include "chart_points.h"
 #include "colorscheme.h"
-#include "comfun.h"
+#include "common_functions.h"
 #include "text.h"
 #include <SDL2/SDL_rect.h>
 #include <assert.h>
@@ -46,11 +46,11 @@ void schannel_free(struct schannel *schannel) {
 struct vec_schannel *vec_schannel_init(size_t count, SDL_Point position) {
   struct vec_schannel *vec = malloc(sizeof *vec);
   vec->count = count;
-  vec->schs = malloc(sizeof(struct schannel *) * count);
+  vec->channels = malloc(sizeof(struct schannel *) * count);
 
   SDL_Point dpos = position;
   for (size_t i = 0; i < count; ++i) {
-    vec->schs[i] = schannel_init(dpos, i + 1, u"Tx", u"Rx");
+    vec->channels[i] = schannel_init(dpos, i + 1, u"Tx", u"Rx");
 
     if (!is_even(i)) {
       dpos.y += 244;
@@ -67,21 +67,30 @@ void vec_schannel_free(struct vec_schannel *vec) {
   assert(vec);
 
   for (size_t i = 0; i < vec->count; ++i) {
-    schannel_free(vec->schs[i]);
-    vec->schs[i] = NULL;
+    schannel_free(vec->channels[i]);
+    vec->channels[i] = NULL;
   }
 
-  free(vec->schs);
-  vec->schs = NULL;
+  free(vec->channels);
+  vec->channels = NULL;
 
   free(vec);
 }
 
 void off_schannel(struct vec_schannel *vec, int sch_idx) {
-  struct schannel *sch = vec->schs[sch_idx];
+  struct schannel *sch = vec->channels[sch_idx];
   if (sch->state == false)
     return;
   sch->state = false;
 
   text8_change_color(sch->number, COLOR_CHANNEL_NUMBER_OFF);
+}
+
+void on_schannel(struct vec_schannel *vec, int sch_idx) {
+  struct schannel *sch = vec->channels[sch_idx];
+  if (sch->state == true)
+    return;
+  sch->state = true;
+
+  text8_change_color(sch->number, COLOR_CHANNEL_NUMBER_ON);
 }

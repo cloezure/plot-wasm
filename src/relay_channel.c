@@ -1,6 +1,6 @@
-#include "rchannel.h"
-#include "comfun.h"
-#include "global.h"
+#include "relay_channel.h"
+#include "common_functions.h"
+#include "global_vars.h"
 #include "plot.h"
 
 #include <SDL2/SDL_image.h>
@@ -14,6 +14,7 @@ char const relay_number_1_on[] = "res/rim_1_on.png";
 char const relay_number_2_on[] = "res/rim_2_on.png";
 
 static inline char const *get_relay_num(size_t num);
+static inline int32_t swap_rchanne_number_value(int32_t value);
 
 static inline bool rchannel_init_number(struct rchannel *rchannel,
                                         int32_t channel_number) {
@@ -95,11 +96,11 @@ static inline char const *get_relay_num(size_t num) {
 struct vec_rchannel *vec_rchannel_init(size_t count, SDL_Point position) {
   struct vec_rchannel *vec = malloc(sizeof *vec);
   vec->count = count;
-  vec->rchs = malloc(sizeof(struct rchannel *) * count);
+  vec->channels = malloc(sizeof(struct rchannel *) * count);
 
   SDL_Point dpos = position;
   for (size_t i = 0; i < count; ++i) {
-    vec->rchs[i] = rchannel_init(dpos, i, u"Tx", u"Rx");
+    vec->channels[i] = rchannel_init(dpos, i, u"Tx", u"Rx");
 
     if (!is_even(i)) {
       dpos.y += 244;
@@ -116,38 +117,51 @@ void vec_rchannel_free(struct vec_rchannel *vec) {
   assert(vec);
 
   for (size_t i = 0; i < vec->count; ++i) {
-    rchannel_free(vec->rchs[i]);
-    vec->rchs[i] = NULL;
+    rchannel_free(vec->channels[i]);
+    vec->channels[i] = NULL;
   }
 
-  free(vec->rchs);
-  vec->rchs = NULL;
+  free(vec->channels);
+  vec->channels = NULL;
 
   free(vec);
 }
 
-void off_rchannel(struct vec_rchannel *vec, int rch_idx) {
-  struct rchannel *rch = vec->rchs[rch_idx];
-  if (rch->state == false)
-    return;
-
-  rch->state = false;
-
-  size_t num = 0;
-  switch (rch->number.value) {
+static inline int32_t swap_rchanne_number_value(int32_t value) {
+  switch (value) {
   case 0:
-    num = 2;
+    return 2;
     break;
   case 1:
-    num = 3;
+    return 3;
     break;
   case 2:
-    num = 0;
+    return 0;
     break;
   case 3:
-    num = 1;
+    return 1;
     break;
+  default:
+    return 0;
   }
+}
 
-  rchannel_init_number(rch, num);
+void off_rchannel(struct vec_rchannel *vec, int rch_idx) {
+  struct rchannel *channel = vec->channels[rch_idx];
+  if (channel->state == false)
+    return;
+
+  channel->state = false;
+  rchannel_init_number(channel,
+                       swap_rchanne_number_value(channel->number.value));
+}
+
+void on_rchannel(struct vec_rchannel *vec, int rch_idx) {
+  struct rchannel *channel = vec->channels[rch_idx];
+  if (channel->state == true)
+    return;
+
+  channel->state = true;
+  rchannel_init_number(channel,
+                       swap_rchanne_number_value(channel->number.value));
 }

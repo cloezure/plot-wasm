@@ -1,16 +1,16 @@
 #include "plot.h"
 #include "chart_points.h"
 #include "colorscheme.h"
-#include "comfun.h"
-#include "global.h"
+#include "common_functions.h"
+#include "global_vars.h"
 #include "text.h"
-#include <SDL2/SDL_rect.h>
 #include <assert.h>
 
 char const plot_background_png[] = "res/plot_back.png";
 
-struct plot *plot_init(SDL_Point position, char16_t const *name) {
+static inline void plot_charts_init(struct plot *plot);
 
+struct plot *plot_init(SDL_Point position, char16_t const *name) {
   SDL_Surface *sur = IMG_Load(plot_background_png);
   if (sur == NULL) {
     display_error_img("Can't load plot_back.png");
@@ -36,37 +36,14 @@ struct plot *plot_init(SDL_Point position, char16_t const *name) {
   new_plot->fft.data = malloc(sizeof(SDL_FPoint));
   new_plot->index = 0;
 
+  SDL_FreeSurface(sur);
+
   int32_t const plot_size_name = 20;
   SDL_Point pos_name = {.x = position.x + 9, .y = position.y - 11};
   new_plot->name = text16_init(text_get_font_type(TEXT_FONT_BOLD),
                                plot_size_name, COLOR_PLOT_NAME, pos_name, name);
 
-  size_t hlpoints = 7;
-  int32_t hj = -30;
-  int32_t *hpoints = malloc(sizeof *hpoints * hlpoints);
-  for (size_t i = 0; i < hlpoints; ++i) {
-    hpoints[i] = hj;
-    hj += 10;
-  }
-  SDL_Point hcharts_pos = {.x = position.x, .y = position.y + sur->h + 5};
-  new_plot->hcharts = chart_points_init(u"MHz", hpoints, hlpoints, hcharts_pos,
-                                        CHARTS_MODE_H, 30);
-
-  size_t vlpoints = 6;
-  int32_t vj = 0;
-  int32_t *vpoints = malloc(sizeof *vpoints * vlpoints);
-  for (size_t i = 0; i < vlpoints; ++i) {
-    vpoints[i] = vj;
-    vj -= 20;
-  }
-  SDL_Point vcharts_pos = {.x = position.x - 34, .y = position.y};
-  new_plot->vcharts = chart_points_init(u"dB", vpoints, vlpoints, vcharts_pos,
-                                        CHARTS_MODE_V, 27);
-
-  SDL_FreeSurface(sur);
-  free(hpoints);
-  free(vpoints);
-
+  plot_charts_init(new_plot);
   return new_plot;
 }
 
@@ -84,7 +61,7 @@ void plot_free(struct plot *plot) {
   free(plot);
 }
 
-void plot_fft_update(struct plot *plot, float *data, int length, float dx,
+void plot_fft_update(struct plot *plot, float const *data, int length, float dx,
                      float x0) {
   free(plot->fft.data);
   plot->fft.data = malloc(sizeof(SDL_FPoint) * length);
@@ -96,4 +73,36 @@ void plot_fft_update(struct plot *plot, float *data, int length, float dx,
   plot->fft.length = length;
   plot->fft.dx = dx;
   plot->fft.x0 = x0;
+}
+
+static inline void plot_charts_init(struct plot *plot) {
+  int px = plot->position.x;
+  int py = plot->position.y;
+  int ph = plot->position.h;
+  int pw = plot->position.w;
+
+  size_t hlpoints = 7;
+  int32_t hj = -30;
+  int32_t *hpoints = malloc(sizeof *hpoints * hlpoints);
+  for (size_t i = 0; i < hlpoints; ++i) {
+    hpoints[i] = hj;
+    hj += 10;
+  }
+  SDL_Point hcharts_pos = {.x = px, .y = py + ph + 5};
+  plot->hcharts = chart_points_init(u"MHz", hpoints, hlpoints, hcharts_pos,
+                                    CHARTS_MODE_H, 30);
+
+  size_t vlpoints = 6;
+  int32_t vj = 0;
+  int32_t *vpoints = malloc(sizeof *vpoints * vlpoints);
+  for (size_t i = 0; i < vlpoints; ++i) {
+    vpoints[i] = vj;
+    vj -= 20;
+  }
+  SDL_Point vcharts_pos = {.x = px - 34, .y = py};
+  plot->vcharts = chart_points_init(u"dB", vpoints, vlpoints, vcharts_pos,
+                                    CHARTS_MODE_V, 27);
+
+  free(hpoints);
+  free(vpoints);
 }

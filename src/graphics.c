@@ -1,11 +1,9 @@
 #include "graphics.h"
 #include "colorscheme.h"
-#include "comfun.h"
-#include "global.h"
+#include "common_functions.h"
+#include "global_vars.h"
 #include "lang.h"
-#include "parse.h"
 #include "plot.h"
-#include "rchannel.h"
 #include "text.h"
 
 #include <SDL2/SDL.h>
@@ -15,71 +13,21 @@
 #include <assert.h>
 #include <string.h>
 
-static inline size_t index_plot_switch(size_t idx);
 static inline void index_plots_set(struct plot **plots);
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-int plot_enter(void) { return 0; }
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-void off_draw(void) {
-  for (size_t i = 0; i < CHANNELS_COUNT; ++i) {
-    off_channel(i);
-  }
-}
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-void change_locale(char const *local) { change_lang(&g_lang, local); }
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-void set_fps(int fps) {
-  if (fps <= 0)
-    return;
-
-  g_graphics->fps = fps;
-}
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-int last_press(void) { return g_last_press; }
-
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-void push_plot_data(int plot_idx, float *data, int length, float dx, float x0) {
-  if (plot_idx < 0 || plot_idx > PLOTS_COUNT)
-    return;
-
-  plot_idx = index_plot_switch(plot_idx);
-
-  struct plot **plots = graphics_plots_init(g_graphics);
-  plot_fft_update(plots[plot_idx], data, length, dx / (100000000 - 25000000),
-                  x0 / 10000);
-  graphics_plots_free(plots);
-}
 
 struct plot **graphics_plots_init(struct graphics *graphics) {
   struct plot **plots = malloc(sizeof(struct plot *) * PLOTS_COUNT);
 
   size_t plot_i = 0;
-  for (size_t i = 0; i < graphics->service->count; ++i) {
-    plots[plot_i] = graphics->service->schs[i]->plot0;
-    plots[plot_i + 1] = graphics->service->schs[i]->plot1;
+  for (size_t i = 0; i < graphics->vec_service->count; ++i) {
+    plots[plot_i] = graphics->vec_service->channels[i]->plot0;
+    plots[plot_i + 1] = graphics->vec_service->channels[i]->plot1;
     plot_i += 2;
   }
 
-  for (size_t i = 0; i < graphics->relay->count; ++i) {
-    plots[plot_i] = graphics->relay->rchs[i]->plot0;
-    plots[plot_i + 1] = graphics->relay->rchs[i]->plot1;
+  for (size_t i = 0; i < graphics->vec_relay->count; ++i) {
+    plots[plot_i] = graphics->vec_relay->channels[i]->plot0;
+    plots[plot_i + 1] = graphics->vec_relay->channels[i]->plot1;
     plot_i += 2;
   }
 
@@ -88,29 +36,14 @@ struct plot **graphics_plots_init(struct graphics *graphics) {
 
 void graphics_plots_free(struct plot **plots) { free(plots); }
 
-#ifdef __EMSCRIPTEN__
-EMSCRIPTEN_KEEPALIVE
-#endif
-void off_channel(int channel_idx) {
-  if (channel_idx < 0 || channel_idx >= CHANNELS_COUNT)
-    return;
-
-  int const serv_count = g_graphics->service->count - 1;
-  if (channel_idx <= serv_count) {
-    off_schannel(g_graphics->service, channel_idx);
-  } else {
-    off_rchannel(g_graphics->relay, channel_idx - 4);
-  }
-}
-
 struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   struct graphics *new_graphics = malloc(sizeof *new_graphics);
   assert(new_graphics);
-  new_graphics->pos = (SDL_Rect){.x = 0, .y = 0, .w = width, .h = height};
-  new_graphics->width_mid = width / 2;
-  new_graphics->height_mid = height / 2;
+  new_graphics->position = (SDL_Rect){.x = 0, .y = 0, .w = width, .h = height};
+  new_graphics->average_width = width / 2;
+  new_graphics->average_height = height / 2;
   new_graphics->fps = fps;
-  new_graphics->mouse = (SDL_Point){0, 0};
+  new_graphics->mouse_position = (SDL_Point){0, 0};
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     display_error_sdl("sdl could not init");
@@ -118,8 +51,8 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
   }
 
   g_window = SDL_CreateWindow("Odas", SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, new_graphics->pos.w,
-                              new_graphics->pos.h, SDL_WINDOW_SHOWN);
+                              SDL_WINDOWPOS_UNDEFINED, new_graphics->position.w,
+                              new_graphics->position.h, SDL_WINDOW_SHOWN);
 
   if (g_window == NULL) {
     display_error_sdl("window could not be created");
@@ -148,8 +81,9 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
     return NULL;
   }
 
-  new_graphics->service = vec_schannel_init(4, (SDL_Point){.x = 0, .y = 0});
-  new_graphics->relay = vec_rchannel_init(2, (SDL_Point){.x = 0, .y = 244 * 2});
+  new_graphics->vec_service = vec_schannel_init(4, (SDL_Point){.x = 0, .y = 0});
+  new_graphics->vec_relay =
+      vec_rchannel_init(2, (SDL_Point){.x = 0, .y = 244 * 2});
 
   struct plot **plots = graphics_plots_init(new_graphics);
   index_plots_set(plots);
@@ -162,8 +96,8 @@ struct graphics *graphics_init(int32_t width, int32_t height, int32_t fps) {
 
 void graphics_free(struct graphics *graphics) {
   assert(graphics);
-  vec_schannel_free(graphics->service);
-  vec_rchannel_free(graphics->relay);
+  vec_schannel_free(graphics->vec_service);
+  vec_rchannel_free(graphics->vec_relay);
 
   free(graphics);
 
@@ -181,11 +115,12 @@ void graphics_free(struct graphics *graphics) {
 
 static inline void index_plots_set(struct plot **plots) {
   for (size_t i = 1; i <= PLOTS_COUNT; ++i) {
-    plots[i - 1]->index = i;
+    size_t sw = index_plot_switch(i - 1);
+    plots[sw]->index = i;
   }
 }
 
-static inline size_t index_plot_switch(size_t idx) {
+size_t index_plot_switch(size_t idx) {
   switch (idx) {
   case 0:
     return 1;

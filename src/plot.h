@@ -2,8 +2,6 @@
 #include "chart_points.h"
 #include "text.h"
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_rect.h>
-#include <stdbool.h>
 
 struct plot {
   SDL_Rect position;
@@ -24,5 +22,5 @@ struct plot {
 struct plot *plot_init(SDL_Point position, char16_t const *name);
 void plot_free(struct plot *plot);
 
-void plot_fft_update(struct plot *plot, float *data, int length, float dx,
+void plot_fft_update(struct plot *plot, float const *data, int length, float dx,
                      float x0);

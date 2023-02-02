@@ -1,4 +1,4 @@
-#include "global.h"
+#include "global_vars.h"
 
 struct graphics *g_graphics = NULL;
 struct lang *g_lang = NULL;

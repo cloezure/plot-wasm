@@ -5,28 +5,27 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "comfun.h"
+#include "common_functions.h"
 #include "draw.h"
-#include "global.h"
+#include "global_vars.h"
 #include "graphics.h"
 #include "locale.h"
 
-#define VERSION 1.6b +
-#define AUTHORS NOTIDMAN
+#define VERSION 1.8b
+#define AUTHORS EZQB
 
 int main(void) {
   setlocale(LC_ALL, "Russian");
-  int32_t const w = 1308;
-  int32_t const h = 734;
-  int32_t const fps_draw = 60;
+  int32_t const screen_width = 1308;
+  int32_t const screen_height = 734;
+  int32_t const rendering_fps = 60;
 
-  g_graphics = graphics_init(w, h, fps_draw);
+  g_graphics = graphics_init(screen_width, screen_height, rendering_fps);
   assert(g_graphics);
 
 #ifdef __EMSCRIPTEN__
   int32_t const simulate_infinite_loop = 1;
   int32_t const fps = -1;
-  /* emscripten_set_some_callback("canvas0", NULL, EM_FALSE, NULL); */
   emscripten_set_main_loop(handle_events, fps, simulate_infinite_loop);
 #else
   LOOP { handle_events(); }
