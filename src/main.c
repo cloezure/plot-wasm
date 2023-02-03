@@ -1,3 +1,5 @@
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_hints.h>
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
@@ -19,6 +21,7 @@ int main(void) {
   int32_t const screen_width = 1308;
   int32_t const screen_height = 734;
   int32_t const rendering_fps = 60;
+  SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
 
   g_graphics = graphics_init(screen_width, screen_height, rendering_fps);
   assert(g_graphics);

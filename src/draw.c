@@ -23,6 +23,10 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 static inline void draw(void);
 static inline void draw_background(SDL_Color color);
 static inline void draw_plot_data(struct plot *plot);
@@ -364,7 +368,6 @@ void handle_events(void) {
   SDL_RenderPresent(g_renderer);
 
   frame_time = SDL_GetTicks() - frame_start;
-
   if (frame_delay > frame_time) {
     SDL_Delay(frame_delay - frame_time);
   }
