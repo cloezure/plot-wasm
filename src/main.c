@@ -13,7 +13,7 @@
 #include "graphics.h"
 #include "locale.h"
 
-#define VERSION 1.8b
+#define VERSION 1.9
 #define AUTHORS EZQB
 
 int main(void) {

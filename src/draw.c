@@ -39,7 +39,6 @@ static inline void draw_info_win16(struct info_win16 *info_win);
 static inline void draw_red_line_plot(struct plot *plot, char16_t const *info);
 static inline void draw_in_plot_info(struct plot *plot, char16_t const *info);
 
-SDL_Event event;
 bool click_left_mouse = false;
 
 static inline void check_click(struct plot *plot) {
@@ -128,9 +127,10 @@ static inline void draw_plot_data(struct plot *plot) {
   float const dx = fabs(plot->fft.dx);
   float const x0 = plot->fft.x0;
   /* float const start_x = plot->position.x; */
-  float const start_x = 0;
-  float const mid_y = x0 + (float)plot->position.h / 2;
-  SDL_FPoint prev = {.x = start_x, .y = mid_y};
+  float const mid_y = (float)plot->position.h / 2;
+  /* SDL_FPoint prev = {.x = plot->fft.data[0].x, */
+  /*                    .y = plot->fft.data[0].y + mid_y}; */
+  SDL_FPoint prev = {.x = 0, .y = plot->fft.data[0].y + mid_y};
   SDL_FPoint next = {.x = prev.x, .y = prev.y};
 
   size_t const fft_length = plot->fft.length;
@@ -330,14 +330,6 @@ static inline void draw(void) {
   draw_line_channel_delim();
   /* draw_fps(); */
   draw_plots();
-
-  /* char buff[100] = {'\0'}; */
-  /* sprintf(buff, "%d", g_last_press); */
-  /* struct text8 *t = text8_init(text_get_font_type(TEXT_FONT_REGULAR), 40, */
-  /*                              COLOR_GREEN, MIDDLE_POINT, buff); */
-
-  /* DRAW_TEXTURE(t->texture, &t->position); */
-  /* text8_free(t); */
 }
 
 void handle_events(void) {
@@ -350,6 +342,7 @@ void handle_events(void) {
 
   frame_start = SDL_GetTicks();
 
+  SDL_Event event;
   while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
       graphics_free(g_graphics);

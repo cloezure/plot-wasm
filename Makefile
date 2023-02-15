@@ -30,7 +30,9 @@ override CFLAGS += -std=c17\
 				-sUSE_SDL=2\
 				-sSINGLE_FILE=1\
 				-sMODULARIZE=1\
+				-flto\
 				-sALLOW_MEMORY_GROWTH\
+				-sASSERTIONS=1\
 				-sEXPORT_NAME="GraphicsPlot"\
 				--preload-file ./res
 
@@ -71,13 +73,13 @@ SRC :=$(wildcard $(DSRC)/*.c)
 
 ifeq ($(MODE), $(WEB))
 all: release
-	cp build/plot.mjs ../radius_control_frontend/src/components/spectrum
-	cp build/plot.data ../radius_control_frontend/public
-	npm start --prefix ../radius_control_frontend
+	cp build/plot.mjs ../../js/radius_control_frontend/src/components/spectrum
+	cp build/plot.data ../../js/radius_control_frontend/public
+	npm start --prefix ../../js/radius_control_frontend
 
 move: release
-	cp build/plot.mjs ../radius_control_frontend/src/components/spectrum
-	cp build/plot.data ../radius_control_frontend/public
+	cp build/plot.mjs ../../js/radius_control_frontend/src/components/spectrum
+	cp build/plot.data ../../js/radius_control_frontend/public
 
 else
 
